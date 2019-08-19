@@ -63,4 +63,27 @@ func (g *Game) Update(screen *ebiten.Image) {
 	}
 
 	g.Draw(screen)
+
+	if g.IsCorrectAnswer() {
+		// Well Done!!
+	}
+}
+
+func (g *Game) IsCorrectAnswer() bool {
+	for i := range g.puzzle {
+		for j := range g.puzzle[i] {
+			q_value := g.puzzle[i][j]
+			a_value := g.board.grids[i][j].GetValue()
+
+			if a_value == GRID_MARK_NOTEXIST {
+				a_value = GRID_NULL
+			}
+
+			if q_value != int(a_value) {
+				return false
+			}
+		}
+	}
+
+	return true
 }
