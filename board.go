@@ -173,16 +173,6 @@ func (b *Board) DrawBoard(screen *ebiten.Image) error {
 	return nil
 }
 
-func (b *Board) OnLeftClick(x int, y int) error {
-	grid, err := b.GetGridByPos(x, y)
-
-	if err == nil {
-		grid.OnLeftClick()
-	}
-
-	return err
-}
-
 func (b *Board) GetGridByPos(x int, y int) (*Grid, error) {
 	row_num := len(b.grids)
 	col_num := len(b.grids[0])
@@ -195,6 +185,16 @@ func (b *Board) GetGridByPos(x int, y int) (*Grid, error) {
 	}
 
 	return nil, &nonogrameErr{desc: "click outside board"}
+}
+
+func (b *Board) OnLeftClick(x int, y int) error {
+	grid, err := b.GetGridByPos(x, y)
+
+	if err == nil {
+		grid.OnLeftClick()
+	}
+
+	return err
 }
 
 func (b *Board) OnRightClick(x int, y int) error {

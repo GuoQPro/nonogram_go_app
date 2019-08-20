@@ -10,9 +10,11 @@ type mouseState int
 
 const (
 	mouseStateNone mouseState = iota
+	mouseStateLeftPress
 	mouseStateLeftPressing
 	mouseStateLeftDrag
 	mouseStateLeftSettled
+	mouseStateRightPress
 	mouseStateRightPressing
 	mouseStateRightDrag
 	mouseStateRightSettled
@@ -62,13 +64,26 @@ func (i *Input) Update() {
 			x, y := ebiten.CursorPosition()
 			i.mouseInitPosX = x
 			i.mouseInitPosY = y
-			i.mouseState = mouseStateLeftPressing
+			i.mouseState = mouseStateLeftPress
 		} else if ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
 			x, y := ebiten.CursorPosition()
 			i.mouseInitPosX = x
 			i.mouseInitPosY = y
-			i.mouseState = mouseStateRightPressing
+			i.mouseState = mouseStateRightPress
 		}
+	case mouseStateLeftPress:
+		if !ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+			x, y := ebiten.CursorPosition()
+			i.mouseRelPosX = x
+			i.mouseRelPosY = y
+			i.mouseState = mouseStateLeftSettled
+		} else {
+			x, y := ebiten.CursorPosition()
+			i.mouseCurPosX = x
+			i.mouseCurPosY = y
+			i.mouseState = mouseStateLeftPressing
+		}
+
 	case mouseStateLeftPressing:
 		if !ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 			x, y := ebiten.CursorPosition()
@@ -95,6 +110,19 @@ func (i *Input) Update() {
 
 	case mouseStateLeftSettled:
 		i.mouseState = mouseStateNone
+
+	case mouseStateRightPress:
+		if !ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
+			x, y := ebiten.CursorPosition()
+			i.mouseRelPosX = x
+			i.mouseRelPosY = y
+			i.mouseState = mouseStateRightSettled
+		} else {
+			x, y := ebiten.CursorPosition()
+			i.mouseCurPosX = x
+			i.mouseCurPosY = y
+			i.mouseState = mouseStateRightPressing
+		}
 
 	case mouseStateRightPressing:
 		if !ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {

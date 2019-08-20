@@ -16,6 +16,7 @@ var (
 	color_white = color.RGBA{255, 255, 255, 255}
 	color_blue  = color.RGBA{0, 0, 255, 255}
 	color_red   = color.RGBA{255, 0, 0, 255}
+	color_black = color.RGBA{0, 0, 0, 255}
 )
 
 type grid_state int
@@ -55,7 +56,7 @@ func (g *Grid) GetPos() (float64, float64) {
 func (g *Grid) Draw(screen *ebiten.Image) error {
 	var gridColor color.Color
 	if g.value == GRID_MARK_EXIST {
-		gridColor = color_blue
+		gridColor = color_black
 	} else if g.value == GRID_MARK_NOTEXIST {
 		gridColor = color_red
 	} else if g.value == GRID_NULL {
@@ -93,7 +94,7 @@ func (g *Grid) OnLeftDragOn() error {
 	if g.value == GRID_MARK_EXIST {
 
 	} else if g.value == GRID_MARK_NOTEXIST {
-		g.value = GRID_NULL
+		g.value = GRID_MARK_EXIST
 	} else if g.value == GRID_NULL {
 		g.value = GRID_MARK_EXIST
 	}

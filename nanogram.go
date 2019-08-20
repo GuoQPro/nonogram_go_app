@@ -52,10 +52,10 @@ func (g *Game) Update(screen *ebiten.Image) {
 
 	switch g.input.mouseState {
 
-	case mouseStateLeftSettled:
-		g.board.OnLeftClick(g.input.mouseRelPosX, g.input.mouseRelPosY)
-	case mouseStateRightSettled:
-		g.board.OnRightClick(g.input.mouseRelPosX, g.input.mouseRelPosY)
+	case mouseStateLeftPress:
+		g.board.OnLeftClick(g.input.mouseInitPosX, g.input.mouseInitPosY)
+	case mouseStateRightPress:
+		g.board.OnRightClick(g.input.mouseInitPosX, g.input.mouseInitPosY)
 	case mouseStateLeftDrag:
 		g.board.OnLeftDrag(g.input.mouseCurPosX, g.input.mouseCurPosY)
 	case mouseStateRightDrag:
