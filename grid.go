@@ -56,7 +56,7 @@ func (g *Grid) GetPos() (float64, float64) {
 func (g *Grid) Draw(screen *ebiten.Image) error {
 	var gridColor color.Color
 	if g.value == GRID_MARK_EXIST {
-		gridColor = color_black
+		gridColor = color_blue
 	} else if g.value == GRID_MARK_NOTEXIST {
 		gridColor = color_red
 	} else if g.value == GRID_NULL {
