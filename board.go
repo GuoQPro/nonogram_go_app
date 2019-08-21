@@ -41,8 +41,8 @@ func (b *Board) InitBoard(puzzle [][]int) {
 	InitFonts()
 	b.CalcIndicator(puzzle)
 
-	b.start_x = float64(STAGE_W) * 0.2
-	b.start_y = float64(STAGE_H) * 0.2
+	b.start_x = float64(STAGE_W) * 0.3
+	b.start_y = float64(STAGE_H) * 0.3
 
 	row := len(puzzle)
 	col := len(puzzle[0])
@@ -207,22 +207,46 @@ func (b *Board) OnRightClick(x int, y int) error {
 	return err
 }
 
-func (b *Board) OnLeftDrag(x int, y int) error {
-	grid, err := b.GetGridByPos(x, y)
+func (b *Board) OnLeftDrag(x_cur int, y_cur int, x_init int, y_init int) error {
+	cur_grid, cur_err := b.GetGridByPos(x_cur, y_cur)
 
-	if err == nil {
-		grid.OnLeftDragOn()
+	if cur_err != nil {
+		return cur_err
 	}
 
-	return err
+	init_grid, init_err := b.GetGridByPos(x_init, y_init)
+
+	if init_err != nil {
+		return init_err
+	}
+
+	if cur_grid.IsSameGrid(init_grid) {
+		return nil
+	}
+
+	cur_grid.OnLeftDragOn()
+
+	return nil
 }
 
-func (b *Board) OnRightDrag(x int, y int) error {
-	grid, err := b.GetGridByPos(x, y)
+func (b *Board) OnRightDrag(x_cur int, y_cur int, x_init int, y_init int) error {
+	cur_grid, cur_err := b.GetGridByPos(x_cur, y_cur)
 
-	if err == nil {
-		grid.OnRightDragOn()
+	if cur_err != nil {
+		return cur_err
 	}
 
-	return err
+	init_grid, init_err := b.GetGridByPos(x_init, y_init)
+
+	if init_err != nil {
+		return init_err
+	}
+
+	if cur_grid.IsSameGrid(init_grid) {
+		return nil
+	}
+
+	cur_grid.OnRightDragOn()
+
+	return nil
 }

@@ -5,10 +5,6 @@ import (
 	"log"
 )
 
-var game_state int
-var cur_table [][]int
-var game_table [][]int
-
 var (
 	STAGE_W = 320
 	STAGE_H = 240
@@ -24,10 +20,6 @@ func StartGame() *Game {
 	game := &Game{}
 	game.InitGame()
 	return game
-}
-
-func (g *Game) get_table() ([][]int, int, int) {
-	return cur_table, 0, 0
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
@@ -57,16 +49,20 @@ func (g *Game) Update(screen *ebiten.Image) {
 	case mouseStateRightPress:
 		g.board.OnRightClick(g.input.mouseInitPosX, g.input.mouseInitPosY)
 	case mouseStateLeftDrag:
-		g.board.OnLeftDrag(g.input.mouseCurPosX, g.input.mouseCurPosY)
+		g.board.OnLeftDrag(g.input.mouseCurPosX, g.input.mouseCurPosY, g.input.mouseInitPosX, g.input.mouseInitPosY)
 	case mouseStateRightDrag:
-		g.board.OnRightDrag(g.input.mouseCurPosX, g.input.mouseCurPosY)
+		g.board.OnRightDrag(g.input.mouseCurPosX, g.input.mouseCurPosY, g.input.mouseInitPosX, g.input.mouseInitPosY)
 	}
 
 	g.Draw(screen)
 
 	if g.IsCorrectAnswer() {
-		// Well Done!!
+		log.Println("Congrats!!!!")
 	}
+}
+
+func (g *Game) SubmitAnswer() bool {
+	return g.IsCorrectAnswer()
 }
 
 func (g *Game) IsCorrectAnswer() bool {

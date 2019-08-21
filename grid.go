@@ -111,3 +111,11 @@ func (g *Grid) OnRightDragOn() error {
 	}
 	return nil
 }
+
+func (g *Grid) IsSameGrid(rh *Grid) bool {
+	if g.pos_x == rh.pos_x && g.pos_y == rh.pos_y {
+		return true
+	} else {
+		return false
+	}
+}

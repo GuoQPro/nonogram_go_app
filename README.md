@@ -7,6 +7,9 @@ Powered by [Ebiten](https://ebiten.org/)
 - Enable database access.
 - Replace rectangles with pictures.
 - Deploy to my server.
+- Add touch support.
+- Submit & Restart.
+- Create puzzle.
 
 ## Run on web browser
 1. Use [Gopherjs](https://github.com/gopherjs/gopherjs) to compile to javascript.
