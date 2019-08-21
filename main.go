@@ -22,8 +22,6 @@ func update(screen *ebiten.Image) error {
 	}
 
 	// Write your game's rendering.
-	//draw_table(screen)
-	//update_input()
 	game.Update(screen)
 
 	return nil
