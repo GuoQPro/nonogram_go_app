@@ -21,8 +21,8 @@ type Board struct {
 }
 
 const (
-	gap_w = 1.0
-	gap_h = 1.0
+	gap_w = 2.0
+	gap_h = 2.0
 )
 
 func NewBoard(puzzle [][]int) *Board {

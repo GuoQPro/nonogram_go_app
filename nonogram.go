@@ -23,7 +23,27 @@ type Game struct {
 	row       int
 	col       int
 	startTime time.Time
+	endTime   time.Time
+	state     gameState
 }
+
+type gameState int
+
+func (gs gameState) String() string {
+	if gs == gameStatePlaying {
+		return "Playing!!!"
+	} else if gs == gameStateSucc {
+		return "Congrats!!!"
+	}
+
+	return ""
+}
+
+const (
+	gameStatePlaying gameState = iota
+	gameStateSucc
+	gameStateSettle
+)
 
 type nonogramErr struct {
 	desc string
@@ -72,6 +92,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 func (g *Game) InitGame(row int, col int) error {
 	g.puzzle = GetPuzzle(row, col)
 	g.GenerateBoard(g.puzzle)
+	g.state = gameStatePlaying
 	g.startTime = time.Now()
 	return nil
 }
@@ -88,23 +109,29 @@ func (g *Game) GenerateBoard(puzzle [][]int) {
 func (g *Game) Update(screen *ebiten.Image) error {
 	g.input.Update()
 
-	switch g.input.mouseState {
+	if g.state == gameStatePlaying {
+		switch g.input.mouseState {
+		case mouseStateLeftPress:
+			g.board.OnLeftClick(g.input.mouseInitPosX, g.input.mouseInitPosY)
+		case mouseStateRightPress:
+			g.board.OnRightClick(g.input.mouseInitPosX, g.input.mouseInitPosY)
+		case mouseStateLeftDrag:
+			g.board.OnLeftDrag(g.input.mouseCurPosX, g.input.mouseCurPosY, g.input.mouseInitPosX, g.input.mouseInitPosY)
+		case mouseStateRightDrag:
+			g.board.OnRightDrag(g.input.mouseCurPosX, g.input.mouseCurPosY, g.input.mouseInitPosX, g.input.mouseInitPosY)
+		}
 
-	case mouseStateLeftPress:
-		g.board.OnLeftClick(g.input.mouseInitPosX, g.input.mouseInitPosY)
-	case mouseStateRightPress:
-		g.board.OnRightClick(g.input.mouseInitPosX, g.input.mouseInitPosY)
-	case mouseStateLeftDrag:
-		g.board.OnLeftDrag(g.input.mouseCurPosX, g.input.mouseCurPosY, g.input.mouseInitPosX, g.input.mouseInitPosY)
-	case mouseStateRightDrag:
-		g.board.OnRightDrag(g.input.mouseCurPosX, g.input.mouseCurPosY, g.input.mouseInitPosX, g.input.mouseInitPosY)
+		if g.IsCorrectAnswer() {
+			g.state = gameStateSucc
+		}
+	} else if g.state == gameStateSucc {
+		g.endTime = time.Now()
+		g.state = gameStateSettle
+	} else if g.state == gameStateSettle {
+
 	}
 
 	g.Draw(screen)
-
-	if g.IsCorrectAnswer() {
-		g.RestartGame(g.row, g.col)
-	}
 
 	return nil
 }
