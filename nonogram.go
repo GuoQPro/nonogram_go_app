@@ -16,10 +16,23 @@ type Game struct {
 	input  *Input
 }
 
-func StartGame() *Game {
+type nonogramErr struct {
+	desc string
+}
+
+func (e *nonogramErr) Error() string {
+	return e.desc
+}
+
+func StartGame(row int, col int) (*Game, error) {
 	game := &Game{}
-	game.InitGame()
-	return game
+	err := game.InitGame(row, col)
+	return game, err
+}
+
+func (g *Game) RestartGame(row int, col int) error {
+	err := g.InitGame(row, col)
+	return err
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
@@ -28,10 +41,11 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	}
 }
 
-func (g *Game) InitGame() {
-	g.puzzle = GetPuzzle(5, 5)
+func (g *Game) InitGame(row int, col int) error {
+	g.puzzle = GetPuzzle(row, col)
 	g.GenerateBoard(g.puzzle)
 	g.input = NewInput()
+	return nil
 }
 
 func (g *Game) GenerateBoard(puzzle [][]int) {
@@ -39,7 +53,7 @@ func (g *Game) GenerateBoard(puzzle [][]int) {
 	g.board.InitBoard(puzzle)
 }
 
-func (g *Game) Update(screen *ebiten.Image) {
+func (g *Game) Update(screen *ebiten.Image) error {
 	g.input.Update()
 
 	switch g.input.mouseState {
@@ -59,6 +73,8 @@ func (g *Game) Update(screen *ebiten.Image) {
 	if g.IsCorrectAnswer() {
 		log.Println("Congrats!!!!")
 	}
+
+	return nil
 }
 
 func (g *Game) SubmitAnswer() bool {

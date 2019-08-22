@@ -1,15 +1,13 @@
 package main
 
 import (
-	"github.com/hajimehoshi/ebiten"
-	//"github.com/hajimehoshi/ebiten/ebitenutil"
 	"fmt"
 	"github.com/golang/freetype/truetype"
+	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/examples/resources/fonts"
 	"github.com/hajimehoshi/ebiten/text"
 	"golang.org/x/image/font"
 	"image/color"
-	//"log"
 	"math"
 )
 
@@ -25,14 +23,6 @@ const (
 	gap_w = 1.0
 	gap_h = 1.0
 )
-
-type nonogrameErr struct {
-	desc string
-}
-
-func (e *nonogrameErr) Error() string {
-	return e.desc
-}
 
 var textFont font.Face
 
@@ -99,8 +89,9 @@ func (b *Board) DrawIndicators(screen *ebiten.Image) {
 			str := fmt.Sprintf("%d", b.col_ind[col][i])
 			bound, _ := font.BoundString(textFont, str)
 			w := (bound.Max.X - bound.Min.X).Ceil()
+			h := (bound.Max.Y - bound.Min.Y).Ceil()
 			cur_y := start_y - (ind_num-i)*(grid_h+gap_h)
-			text.Draw(screen, str, textFont, cur_x+w/2, cur_y, textColor)
+			text.Draw(screen, str, textFont, cur_x+w/2, cur_y+h, textColor)
 		}
 
 		cur_x += (grid_w + gap_w)
@@ -133,6 +124,10 @@ func (b *Board) CalcIndicator(puzzle [][]int) {
 			cur_row_ind = append(cur_row_ind, cur_ind)
 		}
 
+		if len(cur_row_ind) == 0 {
+			cur_row_ind = append(cur_row_ind, 0)
+		}
+
 		b.row_ind = append(b.row_ind, cur_row_ind)
 	}
 
@@ -155,6 +150,10 @@ func (b *Board) CalcIndicator(puzzle [][]int) {
 
 		if cur_ind > 0 {
 			cur_col_ind = append(cur_col_ind, cur_ind)
+		}
+
+		if len(cur_col_ind) == 0 {
+			cur_col_ind = append(cur_col_ind, 0)
 		}
 
 		b.col_ind = append(b.col_ind, cur_col_ind)
@@ -184,7 +183,7 @@ func (b *Board) GetGridByPos(x int, y int) (*Grid, error) {
 		return b.grids[row_index][col_index], nil
 	}
 
-	return nil, &nonogrameErr{desc: "click outside board"}
+	return nil, &nonogramErr{desc: "click outside board"}
 }
 
 func (b *Board) OnLeftClick(x int, y int) error {

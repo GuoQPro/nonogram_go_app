@@ -2,9 +2,6 @@ package main
 
 import (
 	"github.com/hajimehoshi/ebiten"
-	//"github.com/hajimehoshi/ebiten/ebitenutil"
-	//"github.com/hajimehoshi/ebiten/inpututil"
-	//"image/color"
 	"log"
 )
 
@@ -22,14 +19,12 @@ func update(screen *ebiten.Image) error {
 	}
 
 	// Write your game's rendering.
-	game.Update(screen)
-
-	return nil
+	return game.Update(screen)
 }
 
 func main() {
 	// Call ebiten.Run to start your game loop.
-	game = StartGame()
+	game, _ = StartGame(8, 5)
 	if err := ebiten.Run(update, STAGE_W, STAGE_H, 2, "Nonogram Game"); err != nil {
 		log.Fatal(err)
 	}
