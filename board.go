@@ -2,9 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/golang/freetype/truetype"
+
 	"github.com/hajimehoshi/ebiten"
-	"github.com/hajimehoshi/ebiten/examples/resources/fonts"
 	"github.com/hajimehoshi/ebiten/text"
 	"golang.org/x/image/font"
 	"image/color"
@@ -17,6 +16,8 @@ type Board struct {
 	col_ind [][]int
 	start_x float64
 	start_y float64
+	width   float64
+	height  float64
 }
 
 const (
@@ -24,18 +25,19 @@ const (
 	gap_h = 1.0
 )
 
-var textFont font.Face
+func NewBoard(puzzle [][]int) *Board {
+	board := &Board{}
+	board.InitBoard(puzzle)
+	return board
+}
 
 func (b *Board) InitBoard(puzzle [][]int) {
-
-	InitFonts()
 	b.CalcIndicator(puzzle)
-
-	b.start_x = float64(STAGE_W) * 0.3
-	b.start_y = float64(STAGE_H) * 0.3
 
 	row := len(puzzle)
 	col := len(puzzle[0])
+
+	b.CentralizeBoard(row, col)
 
 	b.grids = make([][]*Grid, row)
 
@@ -51,13 +53,12 @@ func (b *Board) InitBoard(puzzle [][]int) {
 	}
 }
 
-func InitFonts() {
-	tt, _ := truetype.Parse(fonts.MPlus1pRegular_ttf)
-	textFont = truetype.NewFace(tt, &truetype.Options{
-		Size:    18,
-		DPI:     54,
-		Hinting: font.HintingFull,
-	})
+func (b *Board) CentralizeBoard(row int, col int) {
+	b.width = float64(col*grid_w + (col-1)*gap_w)
+	b.height = float64(row*grid_h + (row-1)*gap_h)
+
+	b.start_x = (float64(STAGE_W) - b.width) / 2
+	b.start_y = (float64(STAGE_H) - b.height) / 2
 }
 
 func (b *Board) DrawIndicators(screen *ebiten.Image) {

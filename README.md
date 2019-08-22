@@ -11,6 +11,7 @@ Powered by [Ebiten](https://ebiten.org/)
 - Responsive web design.
 - Add timing.
 - Enable database access.
+- ~~Ensure the uniqueness of answer, the symmetry of a part of the given table could break the solvability.(since nonogram is NP-Complete [article page29](http://liacs.leidenuniv.nl/assets/2012-01JanvanRijn.pdf))~~
 
 
 ## Run on web browser

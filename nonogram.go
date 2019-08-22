@@ -1,19 +1,28 @@
 package main
 
 import (
+	"github.com/golang/freetype/truetype"
 	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/examples/resources/fonts"
+	"github.com/hajimehoshi/ebiten/text"
+	"golang.org/x/image/font"
+	"image/color"
 	"log"
+	"time"
 )
 
 var (
 	STAGE_W = 320
-	STAGE_H = 240
+	STAGE_H = 320
 )
 
 type Game struct {
-	board  *Board
-	puzzle [][]int
-	input  *Input
+	board     *Board
+	puzzle    [][]int
+	input     *Input
+	row       int
+	col       int
+	startTime time.Time
 }
 
 type nonogramErr struct {
@@ -24,10 +33,25 @@ func (e *nonogramErr) Error() string {
 	return e.desc
 }
 
+var textFont font.Face
+
 func StartGame(row int, col int) (*Game, error) {
 	game := &Game{}
+	game.row = row
+	game.col = col
+	game.input = NewInput()
+	InitFonts()
 	err := game.InitGame(row, col)
 	return game, err
+}
+
+func InitFonts() {
+	tt, _ := truetype.Parse(fonts.MPlus1pRegular_ttf)
+	textFont = truetype.NewFace(tt, &truetype.Options{
+		Size:    8,
+		DPI:     96,
+		Hinting: font.HintingFull,
+	})
 }
 
 func (g *Game) RestartGame(row int, col int) error {
@@ -36,21 +60,29 @@ func (g *Game) RestartGame(row int, col int) error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	if g.board.DrawBoard(screen) != nil {
-		log.Println("Fatal Error")
+	if err := g.board.DrawBoard(screen); err != nil {
+		log.Println(err)
 	}
+
+	timer_pos_x := int(g.board.start_x) + 50
+	timer_pos_y := int(g.board.start_y + g.board.height + 50)
+	text.Draw(screen, g.GetLapse(), textFont, timer_pos_x, timer_pos_y, color.RGBA{255, 255, 255, 255})
 }
 
 func (g *Game) InitGame(row int, col int) error {
 	g.puzzle = GetPuzzle(row, col)
 	g.GenerateBoard(g.puzzle)
-	g.input = NewInput()
+	g.startTime = time.Now()
 	return nil
 }
 
+func (g *Game) GetLapse() string {
+	lapse := time.Since(g.startTime)
+	return lapse.Truncate(time.Millisecond).String()
+}
+
 func (g *Game) GenerateBoard(puzzle [][]int) {
-	g.board = &Board{}
-	g.board.InitBoard(puzzle)
+	g.board = NewBoard(puzzle)
 }
 
 func (g *Game) Update(screen *ebiten.Image) error {
@@ -71,7 +103,7 @@ func (g *Game) Update(screen *ebiten.Image) error {
 	g.Draw(screen)
 
 	if g.IsCorrectAnswer() {
-		log.Println("Congrats!!!!")
+		g.RestartGame(g.row, g.col)
 	}
 
 	return nil

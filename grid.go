@@ -8,14 +8,17 @@ import (
 )
 
 const (
-	grid_w = 15
-	grid_h = 15
+	grid_w = 16
+	grid_h = 16
+
+	inner_grid_w = grid_w - 2
+	inner_grid_h = grid_h - 2
 )
 
 var (
 	color_white = color.RGBA{255, 255, 255, 255}
-	color_blue  = color.RGBA{0, 0, 255, 255}
-	color_red   = color.RGBA{255, 0, 0, 255}
+	color_blue  = color.RGBA{0, 150, 214, 255}
+	color_red   = color.RGBA{250, 128, 114, 255}
 	color_black = color.RGBA{0, 0, 0, 255}
 )
 
@@ -54,16 +57,16 @@ func (g *Grid) GetPos() (float64, float64) {
 }
 
 func (g *Grid) Draw(screen *ebiten.Image) error {
-	var gridColor color.Color
-	if g.value == GRID_MARK_EXIST {
-		gridColor = color_blue
-	} else if g.value == GRID_MARK_NOTEXIST {
-		gridColor = color_red
-	} else if g.value == GRID_NULL {
-		gridColor = color_white
-	}
 
-	ebitenutil.DrawRect(screen, g.pos_x, g.pos_y, grid_w, grid_h, gridColor)
+	ebitenutil.DrawRect(screen, g.pos_x, g.pos_y, grid_w, grid_h, color_white)
+
+	if g.value == GRID_MARK_EXIST {
+		ebitenutil.DrawRect(screen, g.pos_x+1, g.pos_y+1, inner_grid_w, inner_grid_h, color_blue)
+	} else if g.value == GRID_MARK_NOTEXIST {
+		ebitenutil.DrawRect(screen, g.pos_x+1, g.pos_y+1, inner_grid_w, inner_grid_h, color_red)
+	} else if g.value == GRID_NULL {
+		// do nothing
+	}
 
 	return nil
 }

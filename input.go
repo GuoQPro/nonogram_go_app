@@ -51,7 +51,6 @@ const (
 	DRAG_THRESHOLD = 5.0
 )
 
-// NewInput generates a new Input object.
 func NewInput() *Input {
 	return &Input{}
 }
