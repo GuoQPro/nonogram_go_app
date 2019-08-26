@@ -6,12 +6,12 @@ Powered by [Ebiten](https://ebiten.org/)
 - ~~Support web browser.~~
 - ~~The grid initially clicked should not response subsequent drag operation.~~
 - ~~Generate puzzle randomly with specific size.~~
-- Add touch support.
-- Submit & Restart.
+- ~~Submit & Restart.~~
 - ~~Responsive web design.~~
-- Add timing.
-- Enable database access.
-- ~~Ensure the uniqueness of answer, the symmetry of a part of the given table could break the solvability.(since nonogram is NP-Complete [article page29](http://liacs.leidenuniv.nl/assets/2012-01JanvanRijn.pdf))~~
+- ~~Add timing.~~
+- Add touch support.
+- Restart when playing.
+- Ensure the uniqueness of answer, the diagonal symmetry of any part of the given table could ruin it.(since nonogram is NP-Complete [paper page29](http://liacs.leidenuniv.nl/assets/2012-01JanvanRijn.pdf), brutal force is an option.)
 
 
 ## Run on web browser

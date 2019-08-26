@@ -84,9 +84,16 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		log.Println(err)
 	}
 
+	var timeLapse string
+	if g.state == gameStateSettle {
+		timeLapse = "Congrats: " + g.GetSolvedTime()
+	} else {
+		timeLapse = g.GetLapse()
+	}
+
 	timer_pos_x := int(g.board.start_x) + 50
 	timer_pos_y := int(g.board.start_y + g.board.height + 50)
-	text.Draw(screen, g.GetLapse(), textFont, timer_pos_x, timer_pos_y, color.RGBA{255, 255, 255, 255})
+	text.Draw(screen, timeLapse, textFont, timer_pos_x, timer_pos_y, color.RGBA{255, 255, 255, 255})
 }
 
 func (g *Game) InitGame(row int, col int) error {
@@ -99,6 +106,11 @@ func (g *Game) InitGame(row int, col int) error {
 
 func (g *Game) GetLapse() string {
 	lapse := time.Since(g.startTime)
+	return lapse.Truncate(time.Millisecond).String()
+}
+
+func (g *Game) GetSolvedTime() string {
+	lapse := g.endTime.Sub(g.startTime)
 	return lapse.Truncate(time.Millisecond).String()
 }
 
@@ -128,7 +140,9 @@ func (g *Game) Update(screen *ebiten.Image) error {
 		g.endTime = time.Now()
 		g.state = gameStateSettle
 	} else if g.state == gameStateSettle {
-
+		if g.input.mouseState == mouseStateLeftPress {
+			g.RestartGame(g.row, g.col)
+		}
 	}
 
 	g.Draw(screen)
