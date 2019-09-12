@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/ebitenutil"
 	"github.com/hajimehoshi/ebiten/text"
 	"golang.org/x/image/font"
 	"image/color"
@@ -18,20 +19,28 @@ type Board struct {
 	start_y float64
 	width   float64
 	height  float64
+	bound   Bound
 }
 
-const (
-	gap_w = 2.0
-	gap_h = 2.0
+var (
+	gap_w        float64
+	gap_h        float64
+	grid_w       float64
+	grid_h       float64
+	inner_grid_w float64
+	inner_grid_h float64
 )
 
-func NewBoard(puzzle [][]int) *Board {
+const MIN_GRID_SIZE = 20
+
+func NewBoard(puzzle [][]int, bound Bound) *Board {
 	board := &Board{}
-	board.InitBoard(puzzle)
+	board.InitBoard(puzzle, bound)
 	return board
 }
 
-func (b *Board) InitBoard(puzzle [][]int) {
+func (b *Board) InitBoard(puzzle [][]int, bound Bound) {
+	b.bound = bound
 	b.CalcIndicator(puzzle)
 
 	row := len(puzzle)
@@ -54,18 +63,37 @@ func (b *Board) InitBoard(puzzle [][]int) {
 }
 
 func (b *Board) CentralizeBoard(row int, col int) {
-	b.width = float64(col*grid_w + (col-1)*gap_w)
-	b.height = float64(row*grid_h + (row-1)*gap_h)
+	gridTotalW := math.Ceil(b.bound.w / float64(row))
+	gridTotalH := math.Ceil(b.bound.h / float64(col))
 
-	b.start_x = (float64(STAGE_W) - b.width) / 2
-	b.start_y = (float64(STAGE_H) - b.height) / 2
+	if gridTotalW > gridTotalH {
+		gridTotalW = gridTotalH
+	} else {
+		gridTotalH = gridTotalW
+	}
+
+	gridTotalW = math.Min(MIN_GRID_SIZE, gridTotalW)
+	gridTotalH = math.Min(MIN_GRID_SIZE, gridTotalH)
+
+	grid_w = math.Ceil(gridTotalW * 0.9)
+	grid_h = math.Ceil(gridTotalH * 0.9)
+	inner_grid_w = math.Ceil(grid_w * 0.8)
+	inner_grid_h = math.Ceil(grid_h * 0.8)
+	gap_w = math.Ceil(gridTotalW * 0.1)
+	gap_h = math.Ceil(gridTotalH * 0.1)
+
+	b.width = float64(col)*grid_w + float64(col-1)*gap_w
+	b.height = float64(row)*grid_h + float64(row-1)*gap_h
+
+	b.start_x = ((b.bound.w - b.width) / 2) + b.bound.x
+	b.start_y = ((b.bound.h - b.height) / 2) + b.bound.y
 }
 
 func (b *Board) DrawIndicators(screen *ebiten.Image) {
-	textColor := color.RGBA{255, 255, 255, 255}
+	textColor := color_black
 
-	start_y := int(b.start_y)
-	start_x := int(b.start_x)
+	start_y := b.start_y
+	start_x := b.start_x
 
 	cur_y := start_y
 
@@ -74,9 +102,10 @@ func (b *Board) DrawIndicators(screen *ebiten.Image) {
 		for i := range b.row_ind[row] {
 			str := fmt.Sprintf("%d", b.row_ind[row][i])
 			bound, _ := font.BoundString(textFont, str)
-			h := (bound.Max.Y - bound.Min.Y).Ceil()
-			cur_x := start_x - (ind_num-i)*(grid_w+gap_w)
-			text.Draw(screen, str, textFont, cur_x, cur_y+h/2+grid_h/2, textColor)
+			h := float64((bound.Max.Y - bound.Min.Y).Ceil())
+			cur_x := int(start_x - float64(ind_num-i)*(grid_w+gap_w)*0.75)
+			text_y := int(cur_y + h/2 + grid_h/2)
+			text.Draw(screen, str, textFont, cur_x, text_y, textColor)
 		}
 		cur_y += (grid_h + gap_h)
 	}
@@ -89,10 +118,12 @@ func (b *Board) DrawIndicators(screen *ebiten.Image) {
 		for i := range b.col_ind[col] {
 			str := fmt.Sprintf("%d", b.col_ind[col][i])
 			bound, _ := font.BoundString(textFont, str)
-			w := (bound.Max.X - bound.Min.X).Ceil()
-			h := (bound.Max.Y - bound.Min.Y).Ceil()
-			cur_y := start_y - (ind_num-i)*(grid_h+gap_h)
-			text.Draw(screen, str, textFont, cur_x+w/2, cur_y+h, textColor)
+			w := float64((bound.Max.X - bound.Min.X).Ceil())
+			h := float64((bound.Max.Y - bound.Min.Y).Ceil())
+			cur_y := start_y - float64(ind_num-i)*(grid_h+gap_h)*0.75
+			text_x := int(cur_x + w/2)
+			text_y := int(cur_y + h)
+			text.Draw(screen, str, textFont, text_x, text_y, textColor)
 		}
 
 		cur_x += (grid_w + gap_w)
@@ -162,6 +193,8 @@ func (b *Board) CalcIndicator(puzzle [][]int) {
 }
 
 func (b *Board) DrawBoard(screen *ebiten.Image) error {
+
+	ebitenutil.DrawRect(screen, 0, 0, float64(STAGE_W), float64(STAGE_H), color.RGBA{255, 255, 255, 255})
 	b.DrawIndicators(screen)
 	for row := range b.grids {
 		for col := range b.grids[row] {

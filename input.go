@@ -20,14 +20,17 @@ const (
 	mouseStateRightSettled
 )
 
-//type touchState int
-//
-//const (
-//	touchStateNone touchState = iota
-//	touchStatePressing
-//	touchStateSettled
-//	touchStateInvalid
-//)
+type touchState int
+
+const (
+	touchStateNone touchState = iota
+	touchStateInvalid
+	touchStateMultiTouching
+	touchStateMultiTouch
+	touchStatePress
+	touchStatePressing
+	touchStateDrag
+)
 
 // Input represents the current key states.
 type Input struct {
@@ -39,12 +42,13 @@ type Input struct {
 	mouseCurPosX  int
 	mouseCurPosY  int
 
-	//touchState    touchState
-	//touchID       int
-	//touchInitPosX int
-	//touchInitPosY int
-	//touchLastPosX int
-	//touchLastPosY int
+	touchState    touchState
+	touchID       int
+	touchInitPosX int
+	touchInitPosY int
+	touchCurPosX  int
+	touchCurPosY  int
+	touchPointNum int
 }
 
 const (
@@ -150,50 +154,64 @@ func (i *Input) Update() {
 		i.mouseState = mouseStateNone
 	}
 
-	/*
-		switch i.touchState {
-		case touchStateNone:
-			ts := ebiten.TouchIDs()
-			if len(ts) == 1 {
-				i.touchID = ts[0]
+	switch i.touchState {
+	case touchStateNone:
+		ts := ebiten.TouchIDs()
+		if len(ts) == 1 {
+			i.touchID = ts[0]
+			x, y := ebiten.TouchPosition(ts[0])
+			i.touchInitPosX = x
+			i.touchInitPosY = y
+			i.touchState = touchStatePress
+		} else if len(ts) >= 2 {
+			i.touchState = touchStateMultiTouch
+		}
+	case touchStatePress:
+		i.touchState = touchStatePressing
+
+	case touchStatePressing:
+		ts := ebiten.TouchIDs()
+		if len(ts) >= 2 {
+			i.touchState = touchStateMultiTouch
+		} else if len(ts) == 1 {
+			if ts[0] != i.touchID {
+				i.touchState = touchStateInvalid
+			} else {
 				x, y := ebiten.TouchPosition(ts[0])
-				i.touchInitPosX = x
-				i.touchInitPosY = y
-				i.touchLastPosX = x
-				i.touchLastPosX = y
-				i.touchState = touchStatePressing
-			}
-		case touchStatePressing:
-			ts := ebiten.TouchIDs()
-			if len(ts) >= 2 {
-				break
-			}
-			if len(ts) == 1 {
-				if ts[0] != i.touchID {
-					i.touchState = touchStateInvalid
-				} else {
-					x, y := ebiten.TouchPosition(ts[0])
-					i.touchLastPosX = x
-					i.touchLastPosY = y
+				i.touchCurPosX = x
+				i.touchCurPosY = y
+
+				if math.Abs(float64(x-i.touchInitPosX)) > DRAG_THRESHOLD || math.Abs(float64(y-i.touchInitPosY)) > DRAG_THRESHOLD {
+					i.touchState = touchStateDrag
 				}
-				break
 			}
-			if len(ts) == 0 {
-				dx := i.touchLastPosX - i.touchInitPosX
-				dy := i.touchLastPosY - i.touchInitPosY
-				d, ok := vecToDir(dx, dy)
-				if !ok {
-					i.touchState = touchStateNone
-					break
-				}
-				i.touchDir = d
-				i.touchState = touchStateSettled
-			}
-		case touchStateSettled:
+			break
+		} else if len(ts) == 0 {
 			i.touchState = touchStateNone
-		case touchStateInvalid:
-			if len(ebiten.TouchIDs()) == 0 {
-				i.touchState = touchStateNone
-			}
-		}*/
+		}
+	case touchStateInvalid:
+		if len(ebiten.TouchIDs()) == 0 {
+			i.touchState = touchStateNone
+		}
+	case touchStateMultiTouch:
+		ts := ebiten.TouchIDs()
+		i.touchPointNum = len(ts)
+		i.touchState = touchStateMultiTouching
+	case touchStateMultiTouching:
+		ts := ebiten.TouchIDs()
+		if len(ts) == 0 {
+			i.touchState = touchStateNone
+		}
+	case touchStateDrag:
+		ts := ebiten.TouchIDs()
+		if len(ts) == 0 {
+			i.touchState = touchStateNone
+		} else if len(ts) == 2 {
+			i.touchState = touchStateMultiTouch
+		} else if len(ts) == 1 {
+			x, y := ebiten.TouchPosition(ts[0])
+			i.touchCurPosX = x
+			i.touchCurPosY = y
+		}
+	}
 }

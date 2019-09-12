@@ -2,22 +2,47 @@ package main
 
 import "math/rand"
 import "time"
+import "fmt"
 
 const (
-	PUZZLE_VALUE_EXIST = 1
-	PUZZLE_VALUE_NULL  = 0
+	PUZZLE_VALUE_EXIST     = 1
+	PUZZLE_VALUE_NULL      = 0
+	PUZZLE_VALUE_NOT_EXIST = 2
 )
 
-func GetPuzzle(row int, col int) [][]int {
-	/*return [][]int{
-		{1, 1, 1, 1, 0},
-		{1, 1, 0, 1, 1},
-		{1, 1, 1, 1, 0},
-		{0, 1, 0, 1, 1},
-		{0, 1, 1, 0, 1},
-	}*/
+type Row []int
 
-	return GeneratePuzzle(row, col)
+func (r Row) String() string {
+	result := "|"
+	for i := range r {
+		if (r)[i] == PUZZLE_VALUE_EXIST {
+			result += " *"
+		} else {
+			result += "  "
+		}
+	}
+	result += " |"
+
+	return result
+}
+
+func GetPuzzle(row int, col int) [][]int {
+	for {
+		p := GeneratePuzzle(row, col)
+		row_ind, col_ind := CalcIndicator(p)
+		ok, answer := IsSoluable(row_ind, col_ind)
+
+		if ok {
+			fmt.Println("_______________________")
+			for r := range answer {
+				fmt.Println((Row(answer[r])))
+			}
+			fmt.Println("-----------------------")
+			return p
+		} else {
+			fmt.Println("What a pity")
+		}
+	}
 }
 
 func GeneratePuzzle(row int, col int) [][]int {
@@ -34,11 +59,6 @@ func GeneratePuzzle(row int, col int) [][]int {
 
 	return p
 }
-
-//func ValidatePuzzle(p [][]int) bool {
-//	row_ind, col_ind = CalcIndicator(p)
-//	return true
-//}
 
 func CalcIndicator(puzzle [][]int) ([][]int, [][]int) {
 	row_num := len(puzzle)
