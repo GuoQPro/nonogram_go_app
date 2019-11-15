@@ -8,6 +8,7 @@ import (
 	"github.com/hajimehoshi/ebiten/text"
 	"golang.org/x/image/font"
 	"image/color"
+	//"log"
 	"math"
 )
 
@@ -96,32 +97,39 @@ func (b *Board) DrawIndicators(screen *ebiten.Image) {
 	start_x := b.start_x
 
 	cur_y := start_y
+	cur_x := start_x
 
+	row_ind_gap := 10.0
 	for row := range b.row_ind {
-		ind_num := len(b.row_ind[row])
+		cur_x = start_x
+		len := len(b.row_ind[row])
 		for i := range b.row_ind[row] {
-			str := fmt.Sprintf("%d", b.row_ind[row][i])
+			str := fmt.Sprintf("%d", b.row_ind[row][len-i-1])
 			bound, _ := font.BoundString(textFont, str)
+			w := float64((bound.Max.X - bound.Min.X).Ceil())
 			h := float64((bound.Max.Y - bound.Min.Y).Ceil())
-			cur_x := int(start_x - float64(ind_num-i)*(grid_w+gap_w)*0.75)
+			cur_x = cur_x - (w + row_ind_gap)
 			text_y := int(cur_y + h/2 + grid_h/2)
-			text.Draw(screen, str, textFont, cur_x, text_y, textColor)
+			text.Draw(screen, str, textFont, int(cur_x), text_y, textColor)
 		}
 		cur_y += (grid_h + gap_h)
 	}
 
-	cur_x := start_x
+	cur_x = start_x
 
 	for col := range b.col_ind {
 		ind_num := len(b.col_ind[col])
 
 		for i := range b.col_ind[col] {
-			str := fmt.Sprintf("%d", b.col_ind[col][i])
+			str := fmt.Sprintf(" %d ", b.col_ind[col][i])
+			if b.col_ind[col][i] >= 10 {
+				str = fmt.Sprintf("%d", b.col_ind[col][i])
+			}
 			bound, _ := font.BoundString(textFont, str)
-			w := float64((bound.Max.X - bound.Min.X).Ceil())
+			//w := float64((bound.Max.X - bound.Min.X).Ceil())
 			h := float64((bound.Max.Y - bound.Min.Y).Ceil())
 			cur_y := start_y - float64(ind_num-i)*(grid_h+gap_h)*0.75
-			text_x := int(cur_x + w/2)
+			text_x := int(cur_x) // + w/2)
 			text_y := int(cur_y + h)
 			text.Draw(screen, str, textFont, text_x, text_y, textColor)
 		}
@@ -193,7 +201,6 @@ func (b *Board) CalcIndicator(puzzle [][]int) {
 }
 
 func (b *Board) DrawBoard(screen *ebiten.Image) error {
-
 	ebitenutil.DrawRect(screen, 0, 0, float64(STAGE_W), float64(STAGE_H), color.RGBA{255, 255, 255, 255})
 	b.DrawIndicators(screen)
 	for row := range b.grids {

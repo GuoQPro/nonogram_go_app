@@ -14,8 +14,8 @@ import (
 )
 
 var (
-	STAGE_W = 320
-	STAGE_H = 640
+	STAGE_W = 400
+	STAGE_H = 600
 )
 
 type Game struct {
@@ -31,6 +31,7 @@ type Game struct {
 	options   []Option
 }
 
+// outline
 type Bound struct {
 	x float64
 	y float64
@@ -80,15 +81,16 @@ func (e *nonogramErr) Error() string {
 
 var textFont font.Face
 
-func StartGame(row int, col int) (*Game, error) {
+func StartGame() (*Game, error) {
 	game := &Game{}
-	game.row = row
-	game.col = col
 	game.op_mode = opModeLeftClick
 	game.input = NewInput()
 	InitFonts()
 	game.SetOptions()
-	err := game.InitGame(row, col)
+
+	default_row := 5
+	default_col := 5
+	err := game.InitGame(default_row, default_col)
 	return game, err
 }
 
@@ -100,9 +102,16 @@ func (g *Game) SetOptions() {
 
 	g.options = make([]Option, 0)
 
-	x := float64(STAGE_W) / 2
-	y := float64(STAGE_H) * 1 / 3
+	org_x := (float64(STAGE_W) / 3)
+	org_y := float64(STAGE_H) * 1 / 4
 	height := 20.0
+
+	optionNumInRow := 2
+
+	counter := 0
+
+	x := org_x
+	y := org_y
 	for i := range availableSize {
 		row := availableSize[i][0]
 		col := availableSize[i][1]
@@ -114,9 +123,17 @@ func (g *Game) SetOptions() {
 			h: height,
 		})
 
-		y -= height
-
 		g.options = append(g.options, *o)
+
+		counter += 1
+
+		if counter >= optionNumInRow {
+			y -= height
+			x = org_x
+			counter = 0
+		} else {
+			x += (float64(STAGE_W) / 3)
+		}
 	}
 }
 
@@ -143,7 +160,7 @@ func (g *Game) ShowHint() {
 func InitFonts() {
 	tt, _ := truetype.Parse(fonts.ArcadeN_ttf)
 	textFont = truetype.NewFace(tt, &truetype.Options{
-		Size:    8,
+		Size:    6,
 		DPI:     96,
 		Hinting: font.HintingFull,
 	})
@@ -160,7 +177,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	}
 
 	for i := range g.options {
-		g.options[i].DrawOption(screen)
+		isCurrentOption := g.options[i].IsCurrentOption(g.row, g.col)
+		g.options[i].DrawOption(screen, isCurrentOption)
 	}
 
 	op_indicator_x := g.board.start_x
@@ -173,7 +191,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	var timeLapse string
 	if g.state == gameStateSettle {
-		timeLapse = "Congrats: " + g.GetSolvedTime()
+		timeLapse = "Congrats: " + g.GetSolvingTime()
 	} else {
 		timeLapse = g.GetLapse()
 	}
@@ -188,6 +206,8 @@ func (g *Game) InitGame(row int, col int) error {
 	g.GenerateBoard(g.puzzle)
 	g.state = gameStatePlaying
 	g.startTime = time.Now()
+	g.row = row
+	g.col = col
 	return nil
 }
 
@@ -196,7 +216,7 @@ func (g *Game) GetLapse() string {
 	return lapse.Truncate(time.Millisecond).String()
 }
 
-func (g *Game) GetSolvedTime() string {
+func (g *Game) GetSolvingTime() string {
 	lapse := g.endTime.Sub(g.startTime)
 	return lapse.Truncate(time.Millisecond).String()
 }
@@ -212,10 +232,9 @@ func (g *Game) GenerateBoard(puzzle [][]int) {
 	g.board = NewBoard(puzzle, bound)
 }
 
-func (g *Game) Update(screen *ebiten.Image) error {
-	g.input.Update()
-
-	if g.state == gameStatePlaying {
+func (g *Game) UpdateStateMachine() error {
+	switch g.state {
+	case gameStatePlaying:
 		switch g.input.mouseState {
 		case mouseStateLeftPress:
 			for i := range g.options {
@@ -225,7 +244,6 @@ func (g *Game) Update(screen *ebiten.Image) error {
 			}
 			g.board.OnLeftClick(g.input.mouseInitPosX, g.input.mouseInitPosY)
 		case mouseStateRightPress:
-			//g.ShowHint()
 			g.board.OnRightClick(g.input.mouseInitPosX, g.input.mouseInitPosY)
 		case mouseStateLeftDrag:
 			g.board.OnLeftDrag(g.input.mouseCurPosX, g.input.mouseCurPosY, g.input.mouseInitPosX, g.input.mouseInitPosY)
@@ -258,23 +276,26 @@ func (g *Game) Update(screen *ebiten.Image) error {
 		if g.IsCorrectAnswer() {
 			g.state = gameStateSucc
 		}
-	} else if g.state == gameStateSucc {
+
+	case gameStateSucc:
 		g.endTime = time.Now()
 		g.state = gameStateSettle
-	} else if g.state == gameStateSettle {
+
+	case gameStateSettle:
 		if g.input.mouseState == mouseStateLeftPress ||
 			g.input.touchState == touchStatePress {
 			g.RestartGame(g.row, g.col)
 		}
 	}
-
-	g.Draw(screen)
-
 	return nil
 }
 
-func (g *Game) SubmitAnswer() bool {
-	return g.IsCorrectAnswer()
+func (g *Game) Update(screen *ebiten.Image) error {
+	g.input.Update()
+	g.UpdateStateMachine()
+	g.Draw(screen)
+
+	return nil
 }
 
 func (g *Game) IsCorrectAnswer() bool {
