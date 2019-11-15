@@ -17,3 +17,6 @@ Powered by [Ebiten](https://ebiten.org/)
 ## Run on web browser
 1. Use [Gopherjs](https://github.com/gopherjs/gopherjs) to compile to javascript.
 2. Embed `.js` in `.html`
+
+## Demo
+[Nonogram Demo](http://www.mrsep18.com/2019/09/03/nonogram/)
