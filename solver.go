@@ -13,11 +13,11 @@ then the value could be considered fixed.
 After one full iteration(all rows and columns), if at least one fixed value is added to the table, start a new
 iteration with status quo, stop otherwise.
 
-For the final table, is any value is NOT fixed, then the puzzle is unsoluable since there are more than 1 answers
+For the final table, if any value is NOT fixed, then the puzzle is unsoluable since there are more than 1 answer
 to the given indicators.
 */
 
-func IsSoluable(row_ind [][]int, col_ind [][]int) (bool, [][]int) {
+func IsSoluable(row_ind [][]int, col_ind [][]int) (bool, Puzzle) {
 	row_num := len(row_ind)
 	col_num := len(col_ind)
 
@@ -56,7 +56,7 @@ func GetHint(row_ind [][]int, col_ind [][]int, puzzle [][]int) (int, int, int) {
 	row_num := len(row_ind)
 	col_num := len(col_ind)
 
-	t := make([][]int, row_num)
+	t := make(Puzzle, row_num)
 
 	for i := 0; i < row_num; i++ {
 		t[i] = make([]int, col_num)
@@ -83,7 +83,7 @@ func GetHint(row_ind [][]int, col_ind [][]int, puzzle [][]int) (int, int, int) {
 }
 
 // Get references of a specific column for modification purpose.
-func GetCol(t *[][]int, col int) []*int {
+func GetCol(t *Puzzle, col int) []*int {
 	col_data := []*int{}
 
 	for row_index := range *t {
@@ -94,7 +94,7 @@ func GetCol(t *[][]int, col int) []*int {
 }
 
 // Get references of a specific row for modification purpose.
-func GetRow(t *[][]int, row int) []*int {
+func GetRow(t *Puzzle, row int) []*int {
 	row_data := []*int{}
 	col_num := len((*t)[0])
 
@@ -105,8 +105,8 @@ func GetRow(t *[][]int, row int) []*int {
 	return row_data
 }
 
-func InitTable(row int, col int) [][]int {
-	t := make([][]int, row)
+func InitTable(row int, col int) Puzzle {
+	t := make(Puzzle, row)
 
 	for r := 0; r < row; r++ {
 		t[r] = make([]int, col)
@@ -215,7 +215,7 @@ func Analyze(data []*int, ind []int) (bool, []int) {
 
 					new_c1 := CreateCandidate(PUZZLE_VALUE_EXIST, &(*pre_list)[c_index])
 
-					// Early stop goes into effect here. Any candidate which violated the given indicator
+					// Early stop goes into effect here. Any candidate solution which does not comply with the given indicator
 					// will be filtered ASAP.
 					if ValidateCandidate(&new_c1, ind, is_last_data) {
 						new_cadidates = append(new_cadidates, new_c1)
@@ -280,29 +280,3 @@ func Analyze(data []*int, ind []int) (bool, []int) {
 
 	return has_changed, new_exist_value_index
 }
-
-/*var test = [][]int{
-	{1, 1, 1, 1, 1},
-	{0, 1, 1, 0, 1},
-	{1, 1, 0, 0, 1},
-	{0, 1, 0, 0, 0},
-	{1, 0, 1, 0, 0},
-}
-
-var row_ind = [][]int{
-	{5}, {2, 1}, {2, 1}, {1}, {1, 1},
-}
-
-var col_ind = [][]int{
-	{1, 1, 1}, {4}, {2, 1}, {1}, {3},
-}
-
-func main() {
-	ok, answer := IsSoluable(row_ind, col_ind)
-
-	if ok {
-		fmt.Println("Well done: ", answer)
-	} else {
-		fmt.Println("What a pity")
-	}
-}*/

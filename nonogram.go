@@ -20,7 +20,7 @@ var (
 
 type Game struct {
 	board     *Board
-	puzzle    [][]int
+	puzzle    Puzzle //[][]int
 	input     *Input
 	row       int
 	col       int
@@ -60,6 +60,8 @@ func (gs gameState) String() string {
 	case gameStatePlaying:
 		return "Playing"
 	case gameStateSucc:
+		return "Congrats"
+	case gameStateSettle:
 		return "Congrats"
 	}
 
@@ -222,15 +224,14 @@ func (g *Game) GetSolvingTime() string {
 	return lapse.Truncate(time.Millisecond).String()
 }
 
-func (g *Game) GenerateBoard(puzzle [][]int) {
+func (g *Game) GenerateBoard(p Puzzle) {
 	bound := Bound{}
 	BOARD_MARGIN := float64(STAGE_W) * 0.1
-
 	bound.w = float64(STAGE_W)*2/3 - BOARD_MARGIN
 	bound.h = float64(STAGE_H)*2/3 - BOARD_MARGIN
 	bound.x = float64(STAGE_W) - (bound.w + BOARD_MARGIN)
 	bound.y = float64(STAGE_H) - (bound.h + BOARD_MARGIN)
-	g.board = NewBoard(puzzle, bound)
+	g.board = NewBoard(p, bound)
 }
 
 func (g *Game) UpdateStateMachine() error {

@@ -34,13 +34,13 @@ var (
 
 const MIN_GRID_SIZE = 20
 
-func NewBoard(puzzle [][]int, bound Bound) *Board {
+func NewBoard(puzzle Puzzle, bound Bound) *Board {
 	board := &Board{}
 	board.InitBoard(puzzle, bound)
 	return board
 }
 
-func (b *Board) InitBoard(puzzle [][]int, bound Bound) {
+func (b *Board) InitBoard(puzzle Puzzle, bound Bound) {
 	b.bound = bound
 	b.CalcIndicator(puzzle)
 
@@ -99,12 +99,12 @@ func (b *Board) DrawIndicators(screen *ebiten.Image) {
 	cur_y := start_y
 	cur_x := start_x
 
-	row_ind_gap := 10.0
+	row_ind_gap := 5.0
 	for row := range b.row_ind {
 		cur_x = start_x
 		len := len(b.row_ind[row])
 		for i := range b.row_ind[row] {
-			str := fmt.Sprintf("%d", b.row_ind[row][len-i-1])
+			str := fmt.Sprintf("%d|", b.row_ind[row][len-i-1])
 			bound, _ := font.BoundString(textFont, str)
 			w := float64((bound.Max.X - bound.Min.X).Ceil())
 			h := float64((bound.Max.Y - bound.Min.Y).Ceil())
@@ -121,7 +121,7 @@ func (b *Board) DrawIndicators(screen *ebiten.Image) {
 		ind_num := len(b.col_ind[col])
 
 		for i := range b.col_ind[col] {
-			str := fmt.Sprintf(" %d ", b.col_ind[col][i])
+			str := fmt.Sprintf(" %d", b.col_ind[col][i])
 			if b.col_ind[col][i] >= 10 {
 				str = fmt.Sprintf("%d", b.col_ind[col][i])
 			}
@@ -129,7 +129,7 @@ func (b *Board) DrawIndicators(screen *ebiten.Image) {
 			//w := float64((bound.Max.X - bound.Min.X).Ceil())
 			h := float64((bound.Max.Y - bound.Min.Y).Ceil())
 			cur_y := start_y - float64(ind_num-i)*(grid_h+gap_h)*0.75
-			text_x := int(cur_x) // + w/2)
+			text_x := int(cur_x - gap_w*0.5) // + w/2)
 			text_y := int(cur_y + h)
 			text.Draw(screen, str, textFont, text_x, text_y, textColor)
 		}
@@ -138,7 +138,7 @@ func (b *Board) DrawIndicators(screen *ebiten.Image) {
 	}
 }
 
-func (b *Board) CalcIndicator(puzzle [][]int) {
+func (b *Board) CalcIndicator(puzzle Puzzle) {
 	row_num := len(puzzle)
 	col_num := len(puzzle[0])
 

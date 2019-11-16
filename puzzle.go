@@ -11,12 +11,13 @@ const (
 )
 
 type Row []int
+type Puzzle []Row
 
-func (r Row) String() string {
+func (r *Row) String() string {
 	result := "|"
-	for i := range r {
-		if (r)[i] == PUZZLE_VALUE_EXIST {
-			result += " *"
+	for i := range *r {
+		if (*r)[i] == PUZZLE_VALUE_EXIST {
+			result += " x"
 		} else {
 			result += "  "
 		}
@@ -26,29 +27,39 @@ func (r Row) String() string {
 	return result
 }
 
-func GetPuzzle(row int, col int) [][]int {
+func (p *Puzzle) String() string {
+	result := ""
+	topLine := "---"
+	bottomLine := "---"
+
+	for r := range *p {
+		topLine += "--"
+		bottomLine += "--"
+		result += fmt.Sprintf("\n%s", &((*p)[r]))
+	}
+	result = topLine + result + "\n" + bottomLine
+	return result
+}
+
+func GetPuzzle(row int, col int) Puzzle {
 	for {
 		p := GeneratePuzzle(row, col)
 		row_ind, col_ind := CalcIndicator(p)
-		ok, answer := IsSoluable(row_ind, col_ind)
+		ok, result := IsSoluable(row_ind, col_ind)
 
 		if ok {
-			fmt.Println("_______________________")
-			for r := range answer {
-				fmt.Println((Row(answer[r])))
-			}
-			fmt.Println("-----------------------")
+			fmt.Println(&result)
 			return p
 		} else {
-			fmt.Println("What a pity")
+			//fmt.Println("What a pity")
 		}
 	}
 }
 
-func GeneratePuzzle(row int, col int) [][]int {
+func GeneratePuzzle(row int, col int) Puzzle {
 	seed := rand.NewSource(time.Now().UnixNano())
 	new_rand := rand.New(seed)
-	p := make([][]int, row)
+	p := make(Puzzle, row)
 
 	for r := 0; r < row; r++ {
 		p[r] = make([]int, col)
@@ -60,7 +71,7 @@ func GeneratePuzzle(row int, col int) [][]int {
 	return p
 }
 
-func CalcIndicator(puzzle [][]int) ([][]int, [][]int) {
+func CalcIndicator(puzzle Puzzle) ([][]int, [][]int) {
 	row_num := len(puzzle)
 	col_num := len(puzzle[0])
 
