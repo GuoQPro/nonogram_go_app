@@ -56,10 +56,11 @@ var (
 )
 
 func (gs gameState) String() string {
-	if gs == gameStatePlaying {
-		return "Playing!!!"
-	} else if gs == gameStateSucc {
-		return "Congrats!!!"
+	switch gs {
+	case gameStatePlaying:
+		return "Playing"
+	case gameStateSucc:
+		return "Congrats"
 	}
 
 	return ""
@@ -191,9 +192,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	var timeLapse string
 	if g.state == gameStateSettle {
-		timeLapse = "Congrats: " + g.GetSolvingTime()
+		timeLapse = fmt.Sprintf("[%s] %s", g.state, g.GetSolvingTime()) // "Congrats: " + g.GetSolvingTime()
 	} else {
-		timeLapse = g.GetLapse()
+		timeLapse = fmt.Sprintf("[%s] %s", g.state, g.GetLapse()) //g.GetLapse()
 	}
 
 	timer_pos_x := int(op_indicator_x + grid_w*2)
