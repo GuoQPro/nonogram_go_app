@@ -1,21 +1,22 @@
-package main
+package nonogram_go_app
 
 import (
 	"fmt"
+	"image/color"
+	"log"
+	"time"
+
 	"github.com/golang/freetype/truetype"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 	"github.com/hajimehoshi/ebiten/examples/resources/fonts"
 	"github.com/hajimehoshi/ebiten/text"
 	"golang.org/x/image/font"
-	"image/color"
-	"log"
-	"time"
 )
 
 var (
-	STAGE_W = 400
-	STAGE_H = 600
+	stageWidth  = 400
+	stageHeight = 600
 )
 
 type Game struct {
@@ -27,7 +28,7 @@ type Game struct {
 	startTime time.Time
 	endTime   time.Time
 	state     gameState
-	op_mode   opMode
+	opMode    OpMode
 	options   []Option
 }
 
@@ -39,20 +40,20 @@ type Bound struct {
 	h float64
 }
 
-type opMode int
+type OpMode int
 type gameState int
 
 const (
-	opModeLeftClick opMode = iota
+	opModeLeftClick OpMode = iota
 	opModeRightClick
 	opModeReserved
 )
 
 var (
-	color_white = color.RGBA{252, 245, 239, 255}
-	color_blue  = color.RGBA{109, 181, 202, 255}
-	color_red   = color.RGBA{255, 104, 53, 255}
-	color_black = color.RGBA{0, 0, 0, 255}
+	colorWhite = color.RGBA{252, 245, 239, 255}
+	colorBlue  = color.RGBA{109, 181, 202, 255}
+	colorRed   = color.RGBA{255, 104, 53, 255}
+	colorBlack = color.RGBA{0, 0, 0, 255}
 )
 
 func (gs gameState) String() string {
@@ -86,14 +87,14 @@ var textFont font.Face
 
 func StartGame() (*Game, error) {
 	game := &Game{}
-	game.op_mode = opModeLeftClick
+	game.opMode = opModeLeftClick
 	game.input = NewInput()
 	InitFonts()
 	game.SetOptions()
 
-	default_row := 5
-	default_col := 5
-	err := game.InitGame(default_row, default_col)
+	defaultRow := 5
+	defaultCol := 5
+	err := game.InitGame(defaultRow, defaultCol)
 	return game, err
 }
 
@@ -105,16 +106,16 @@ func (g *Game) SetOptions() {
 
 	g.options = make([]Option, 0)
 
-	org_x := (float64(STAGE_W) / 3)
-	org_y := float64(STAGE_H) * 1 / 4
+	orgX := (float64(stageWidth) / 3)
+	orgY := float64(stageHeight) * 1 / 4
 	height := 20.0
 
 	optionNumInRow := 2
 
 	counter := 0
 
-	x := org_x
-	y := org_y
+	x := orgX
+	y := orgY
 	for i := range availableSize {
 		row := availableSize[i][0]
 		col := availableSize[i][1]
@@ -122,32 +123,32 @@ func (g *Game) SetOptions() {
 		o := NewOption(row, col, txt, Bound{
 			x: x,
 			y: y,
-			w: float64(STAGE_W),
+			w: float64(stageWidth),
 			h: height,
 		})
 
 		g.options = append(g.options, *o)
 
-		counter += 1
+		counter++
 
 		if counter >= optionNumInRow {
 			y -= height
-			x = org_x
+			x = orgX
 			counter = 0
 		} else {
-			x += (float64(STAGE_W) / 3)
+			x += (float64(stageWidth) / 3)
 		}
 	}
 }
 
 func (g *Game) SwitchOpMode() {
-	g.op_mode++
-	g.op_mode %= opModeReserved
+	g.opMode++
+	g.opMode %= opModeReserved
 }
 
 func (g *Game) ShowHint() {
 	// todo: if the current solution is already wrong.
-	t := make([][]int, g.row)
+	t := make(Puzzle, g.row)
 
 	for r := 0; r < g.row; r++ {
 		t[r] = make([]int, g.col)
@@ -155,9 +156,9 @@ func (g *Game) ShowHint() {
 			t[r][c] = int(g.board.grids[r][c].value)
 		}
 	}
-	hint_row, hint_col, _ := GetHint(g.board.row_ind, g.board.col_ind, t)
+	hintRow, hintCol, _ := GetHint(g.board.rowInd, g.board.colInd, t)
 
-	g.board.grids[hint_row][hint_col].Hint()
+	g.board.grids[hintRow][hintCol].Hint()
 }
 
 func InitFonts() {
@@ -184,12 +185,12 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		g.options[i].DrawOption(screen, isCurrentOption)
 	}
 
-	op_indicator_x := g.board.start_x
-	op_indicator_y := float64(g.board.start_y + g.board.height + 30)
-	if g.op_mode == opModeLeftClick {
-		ebitenutil.DrawRect(screen, op_indicator_x, op_indicator_y, grid_w, grid_h, color_black)
+	opIndicatorX := g.board.startX
+	opIndicatorY := float64(g.board.startY + g.board.height + 30)
+	if g.opMode == opModeLeftClick {
+		ebitenutil.DrawRect(screen, opIndicatorX, opIndicatorY, gridWidth, gridHeight, colorBlack)
 	} else {
-		ebitenutil.DrawRect(screen, op_indicator_x, op_indicator_y, grid_w, grid_h, color_red)
+		ebitenutil.DrawRect(screen, opIndicatorX, opIndicatorY, gridWidth, gridHeight, colorRed)
 	}
 
 	var timeLapse string
@@ -199,9 +200,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		timeLapse = fmt.Sprintf("[%s] %s", g.state, g.GetLapse()) //g.GetLapse()
 	}
 
-	timer_pos_x := int(op_indicator_x + grid_w*2)
-	timer_pos_y := int(op_indicator_y + 10)
-	text.Draw(screen, timeLapse, textFont, timer_pos_x, timer_pos_y, color_black)
+	timerPosX := int(opIndicatorX + gridWidth*2)
+	timerPosY := int(opIndicatorY + 10)
+	text.Draw(screen, timeLapse, textFont, timerPosX, timerPosY, colorBlack)
 }
 
 func (g *Game) InitGame(row int, col int) error {
@@ -226,11 +227,11 @@ func (g *Game) GetSolvingTime() string {
 
 func (g *Game) GenerateBoard(p Puzzle) {
 	bound := Bound{}
-	BOARD_MARGIN := float64(STAGE_W) * 0.1
-	bound.w = float64(STAGE_W)*2/3 - BOARD_MARGIN
-	bound.h = float64(STAGE_H)*2/3 - BOARD_MARGIN
-	bound.x = float64(STAGE_W) - (bound.w + BOARD_MARGIN)
-	bound.y = float64(STAGE_H) - (bound.h + BOARD_MARGIN)
+	boardMarginWidth := float64(stageWidth) * 0.1
+	bound.w = float64(stageWidth)*2/3 - boardMarginWidth
+	bound.h = float64(stageHeight)*2/3 - boardMarginWidth
+	bound.x = float64(stageWidth) - (bound.w + boardMarginWidth)
+	bound.y = float64(stageHeight) - (bound.h + boardMarginWidth)
 	g.board = NewBoard(p, bound)
 }
 
@@ -262,13 +263,13 @@ func (g *Game) UpdateStateMachine() error {
 			}
 
 		case touchStatePress:
-			if g.op_mode == opModeLeftClick {
+			if g.opMode == opModeLeftClick {
 				g.board.OnLeftClick(g.input.touchInitPosX, g.input.touchInitPosY)
 			} else {
 				g.board.OnRightClick(g.input.touchInitPosX, g.input.touchInitPosY)
 			}
 		case touchStateDrag:
-			if g.op_mode == opModeLeftClick {
+			if g.opMode == opModeLeftClick {
 				g.board.OnLeftDrag(g.input.touchCurPosX, g.input.touchCurPosY, g.input.touchInitPosX, g.input.touchInitPosY)
 			} else {
 				g.board.OnRightDrag(g.input.touchCurPosX, g.input.touchCurPosY, g.input.touchInitPosX, g.input.touchInitPosY)
@@ -303,14 +304,14 @@ func (g *Game) Update(screen *ebiten.Image) error {
 func (g *Game) IsCorrectAnswer() bool {
 	for i := range g.puzzle {
 		for j := range g.puzzle[i] {
-			q_value := g.puzzle[i][j]
-			a_value := g.board.grids[i][j].GetValue()
+			qValue := g.puzzle[i][j]
+			aValue := g.board.grids[i][j].GetValue()
 
-			if a_value == GRID_MARK_NOTEXIST {
-				a_value = GRID_NULL
+			if aValue == gridStateMarkNotExist {
+				aValue = gridStateNull
 			}
 
-			if q_value != int(a_value) {
+			if qValue != int(aValue) {
 				return false
 			}
 		}

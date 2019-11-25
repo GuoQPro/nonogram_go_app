@@ -1,38 +1,40 @@
-package main
+package nonogram_go_app
 
 import (
 	"fmt"
+
+	"image/color"
 
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 	"github.com/hajimehoshi/ebiten/text"
 	"golang.org/x/image/font"
-	"image/color"
+
 	//"log"
 	"math"
 )
 
 type Board struct {
-	grids   [][]*Grid
-	row_ind [][]int
-	col_ind [][]int
-	start_x float64
-	start_y float64
-	width   float64
-	height  float64
-	bound   Bound
+	grids  [][]*Grid
+	rowInd [][]int
+	colInd [][]int
+	startX float64
+	startY float64
+	width  float64
+	height float64
+	bound  Bound
 }
 
 var (
-	gap_w        float64
-	gap_h        float64
-	grid_w       float64
-	grid_h       float64
-	inner_grid_w float64
-	inner_grid_h float64
+	gapWidth   float64
+	gapHeight  float64
+	gridWidth  float64
+	gridHeight float64
+	innerGridW float64
+	innerGridH float64
 )
 
-const MIN_GRID_SIZE = 20
+const minGridSize = 20
 
 func NewBoard(puzzle Puzzle, bound Bound) *Board {
 	board := &Board{}
@@ -51,15 +53,15 @@ func (b *Board) InitBoard(puzzle Puzzle, bound Bound) {
 
 	b.grids = make([][]*Grid, row)
 
-	cur_y := b.start_y
+	curY := b.startY
 	for r := 0; r < row; r++ {
-		cur_x := b.start_x
+		curX := b.startX
 		b.grids[r] = make([]*Grid, col)
 		for c := 0; c < col; c++ {
-			b.grids[r][c] = NewGrid(float64(cur_x), float64(cur_y))
-			cur_x += (grid_w + gap_w)
+			b.grids[r][c] = NewGrid(float64(curX), float64(curY))
+			curX += (gridWidth + gapWidth)
 		}
-		cur_y += (grid_h + gap_h)
+		curY += (gridHeight + gapHeight)
 	}
 }
 
@@ -73,135 +75,135 @@ func (b *Board) CentralizeBoard(row int, col int) {
 		gridTotalH = gridTotalW
 	}
 
-	gridTotalW = math.Min(MIN_GRID_SIZE, gridTotalW)
-	gridTotalH = math.Min(MIN_GRID_SIZE, gridTotalH)
+	gridTotalW = math.Min(minGridSize, gridTotalW)
+	gridTotalH = math.Min(minGridSize, gridTotalH)
 
-	grid_w = math.Ceil(gridTotalW * 0.9)
-	grid_h = math.Ceil(gridTotalH * 0.9)
-	inner_grid_w = math.Ceil(grid_w * 0.8)
-	inner_grid_h = math.Ceil(grid_h * 0.8)
-	gap_w = math.Ceil(gridTotalW * 0.1)
-	gap_h = math.Ceil(gridTotalH * 0.1)
+	gridWidth = math.Ceil(gridTotalW * 0.9)
+	gridHeight = math.Ceil(gridTotalH * 0.9)
+	innerGridW = math.Ceil(gridWidth * 0.8)
+	innerGridH = math.Ceil(gridHeight * 0.8)
+	gapWidth = math.Ceil(gridTotalW * 0.1)
+	gapHeight = math.Ceil(gridTotalH * 0.1)
 
-	b.width = float64(col)*grid_w + float64(col-1)*gap_w
-	b.height = float64(row)*grid_h + float64(row-1)*gap_h
+	b.width = float64(col)*gridWidth + float64(col-1)*gapWidth
+	b.height = float64(row)*gridHeight + float64(row-1)*gapHeight
 
-	b.start_x = ((b.bound.w - b.width) / 2) + b.bound.x
-	b.start_y = ((b.bound.h - b.height) / 2) + b.bound.y
+	b.startX = ((b.bound.w - b.width) / 2) + b.bound.x
+	b.startY = ((b.bound.h - b.height) / 2) + b.bound.y
 }
 
 func (b *Board) DrawIndicators(screen *ebiten.Image) {
-	textColor := color_black
+	textColor := colorBlack
 
-	start_y := b.start_y
-	start_x := b.start_x
+	startY := b.startY
+	startX := b.startX
 
-	cur_y := start_y
-	cur_x := start_x
+	curY := startY
+	curX := startX
 
-	row_ind_gap := 5.0
-	for row := range b.row_ind {
-		cur_x = start_x
-		len := len(b.row_ind[row])
-		for i := range b.row_ind[row] {
-			str := fmt.Sprintf("%d|", b.row_ind[row][len-i-1])
+	rowIndGap := 5.0
+	for row := range b.rowInd {
+		curX = startX
+		len := len(b.rowInd[row])
+		for i := range b.rowInd[row] {
+			str := fmt.Sprintf("%d|", b.rowInd[row][len-i-1])
 			bound, _ := font.BoundString(textFont, str)
 			w := float64((bound.Max.X - bound.Min.X).Ceil())
 			h := float64((bound.Max.Y - bound.Min.Y).Ceil())
-			cur_x = cur_x - (w + row_ind_gap)
-			text_y := int(cur_y + h/2 + grid_h/2)
-			text.Draw(screen, str, textFont, int(cur_x), text_y, textColor)
+			curX = curX - (w + rowIndGap)
+			textY := int(curY + h/2 + gridHeight/2)
+			text.Draw(screen, str, textFont, int(curX), textY, textColor)
 		}
-		cur_y += (grid_h + gap_h)
+		curY += (gridHeight + gapHeight)
 	}
 
-	cur_x = start_x
+	curX = startX
 
-	for col := range b.col_ind {
-		ind_num := len(b.col_ind[col])
+	for col := range b.colInd {
+		indNum := len(b.colInd[col])
 
-		for i := range b.col_ind[col] {
-			str := fmt.Sprintf(" %d", b.col_ind[col][i])
-			if b.col_ind[col][i] >= 10 {
-				str = fmt.Sprintf("%d", b.col_ind[col][i])
+		for i := range b.colInd[col] {
+			str := fmt.Sprintf(" %d", b.colInd[col][i])
+			if b.colInd[col][i] >= 10 {
+				str = fmt.Sprintf("%d", b.colInd[col][i])
 			}
 			bound, _ := font.BoundString(textFont, str)
 			//w := float64((bound.Max.X - bound.Min.X).Ceil())
 			h := float64((bound.Max.Y - bound.Min.Y).Ceil())
-			cur_y := start_y - float64(ind_num-i)*(grid_h+gap_h)*0.75
-			text_x := int(cur_x - gap_w*0.5) // + w/2)
-			text_y := int(cur_y + h)
-			text.Draw(screen, str, textFont, text_x, text_y, textColor)
+			curY := startY - float64(indNum-i)*(gridHeight+gapHeight)*0.75
+			textX := int(curX - gapWidth*0.5) // + w/2)
+			textY := int(curY + h)
+			text.Draw(screen, str, textFont, textX, textY, textColor)
 		}
 
-		cur_x += (grid_w + gap_w)
+		curX += (gridWidth + gapWidth)
 	}
 }
 
 func (b *Board) CalcIndicator(puzzle Puzzle) {
-	row_num := len(puzzle)
-	col_num := len(puzzle[0])
+	rowNum := len(puzzle)
+	colNum := len(puzzle[0])
 
 	row, col := 0, 0
 
-	b.row_ind = [][]int{}
-	for row = 0; row < row_num; row++ {
-		cur_row_ind := []int{}
-		cur_ind := 0
-		for col = 0; col < col_num; col++ {
+	b.rowInd = [][]int{}
+	for row = 0; row < rowNum; row++ {
+		curRowInd := []int{}
+		curInd := 0
+		for col = 0; col < colNum; col++ {
 			value := puzzle[row][col]
-			if value == PUZZLE_VALUE_EXIST {
-				cur_ind += 1
+			if value == puzzleValueExist {
+				curInd++
 			} else {
-				if cur_ind != 0 {
-					cur_row_ind = append(cur_row_ind, cur_ind)
-					cur_ind = 0
+				if curInd != 0 {
+					curRowInd = append(curRowInd, curInd)
+					curInd = 0
 				}
 			}
 		}
 
-		if cur_ind > 0 {
-			cur_row_ind = append(cur_row_ind, cur_ind)
+		if curInd > 0 {
+			curRowInd = append(curRowInd, curInd)
 		}
 
-		if len(cur_row_ind) == 0 {
-			cur_row_ind = append(cur_row_ind, 0)
+		if len(curRowInd) == 0 {
+			curRowInd = append(curRowInd, 0)
 		}
 
-		b.row_ind = append(b.row_ind, cur_row_ind)
+		b.rowInd = append(b.rowInd, curRowInd)
 	}
 
-	b.col_ind = [][]int{}
-	for col = 0; col < col_num; col++ {
-		cur_col_ind := []int{}
-		cur_ind := 0
+	b.colInd = [][]int{}
+	for col = 0; col < colNum; col++ {
+		curColInd := []int{}
+		curInd := 0
 
-		for row = 0; row < row_num; row++ {
+		for row = 0; row < rowNum; row++ {
 			value := puzzle[row][col]
-			if value == PUZZLE_VALUE_EXIST {
-				cur_ind += 1
+			if value == puzzleValueExist {
+				curInd++
 			} else {
-				if cur_ind != 0 {
-					cur_col_ind = append(cur_col_ind, cur_ind)
-					cur_ind = 0
+				if curInd != 0 {
+					curColInd = append(curColInd, curInd)
+					curInd = 0
 				}
 			}
 		}
 
-		if cur_ind > 0 {
-			cur_col_ind = append(cur_col_ind, cur_ind)
+		if curInd > 0 {
+			curColInd = append(curColInd, curInd)
 		}
 
-		if len(cur_col_ind) == 0 {
-			cur_col_ind = append(cur_col_ind, 0)
+		if len(curColInd) == 0 {
+			curColInd = append(curColInd, 0)
 		}
 
-		b.col_ind = append(b.col_ind, cur_col_ind)
+		b.colInd = append(b.colInd, curColInd)
 	}
 }
 
 func (b *Board) DrawBoard(screen *ebiten.Image) error {
-	ebitenutil.DrawRect(screen, 0, 0, float64(STAGE_W), float64(STAGE_H), color.RGBA{255, 255, 255, 255})
+	ebitenutil.DrawRect(screen, 0, 0, float64(stageWidth), float64(stageHeight), color.RGBA{255, 255, 255, 255})
 	b.DrawIndicators(screen)
 	for row := range b.grids {
 		for col := range b.grids[row] {
@@ -214,14 +216,14 @@ func (b *Board) DrawBoard(screen *ebiten.Image) error {
 }
 
 func (b *Board) GetGridByPos(x int, y int) (*Grid, error) {
-	row_num := len(b.grids)
-	col_num := len(b.grids[0])
+	rowNum := len(b.grids)
+	colNum := len(b.grids[0])
 
-	col_index := int(math.Floor((float64(x) - b.start_x) / (grid_w + gap_w)))
-	row_index := int(math.Floor((float64(y) - b.start_y) / (grid_h + gap_h)))
+	colIndex := int(math.Floor((float64(x) - b.startX) / (gridWidth + gapWidth)))
+	rowIndex := int(math.Floor((float64(y) - b.startY) / (gridHeight + gapHeight)))
 
-	if row_index >= 0 && row_index < row_num && col_index >= 0 && col_index < col_num {
-		return b.grids[row_index][col_index], nil
+	if rowIndex >= 0 && rowIndex < rowNum && colIndex >= 0 && colIndex < colNum {
+		return b.grids[rowIndex][colIndex], nil
 	}
 
 	return nil, &nonogramErr{desc: "click outside board"}
@@ -247,46 +249,46 @@ func (b *Board) OnRightClick(x int, y int) error {
 	return err
 }
 
-func (b *Board) OnLeftDrag(x_cur int, y_cur int, x_init int, y_init int) error {
-	cur_grid, cur_err := b.GetGridByPos(x_cur, y_cur)
+func (b *Board) OnLeftDrag(curX int, curY int, startX int, startY int) error {
+	curGrid, curErr := b.GetGridByPos(curX, curY)
 
-	if cur_err != nil {
-		return cur_err
+	if curErr != nil {
+		return curErr
 	}
 
-	init_grid, init_err := b.GetGridByPos(x_init, y_init)
+	startGrid, startErr := b.GetGridByPos(startX, startY)
 
-	if init_err != nil {
-		return init_err
+	if startErr != nil {
+		return startErr
 	}
 
-	if cur_grid.IsSameGrid(init_grid) {
+	if curGrid.IsSameGrid(startGrid) {
 		return nil
 	}
 
-	cur_grid.OnLeftDragOn()
+	curGrid.OnLeftDragOn()
 
 	return nil
 }
 
-func (b *Board) OnRightDrag(x_cur int, y_cur int, x_init int, y_init int) error {
-	cur_grid, cur_err := b.GetGridByPos(x_cur, y_cur)
+func (b *Board) OnRightDrag(curX int, curY int, startX int, startY int) error {
+	curGrid, curErr := b.GetGridByPos(curX, curY)
 
-	if cur_err != nil {
-		return cur_err
+	if curErr != nil {
+		return curErr
 	}
 
-	init_grid, init_err := b.GetGridByPos(x_init, y_init)
+	startGrid, startErr := b.GetGridByPos(startX, startY)
 
-	if init_err != nil {
-		return init_err
+	if startErr != nil {
+		return startErr
 	}
 
-	if cur_grid.IsSameGrid(init_grid) {
+	if curGrid.IsSameGrid(startGrid) {
 		return nil
 	}
 
-	cur_grid.OnRightDragOn()
+	curGrid.OnRightDragOn()
 
 	return nil
 }

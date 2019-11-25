@@ -1,4 +1,4 @@
-package main
+package nonogram_go_app
 
 import (
 	"github.com/hajimehoshi/ebiten"
@@ -52,7 +52,7 @@ type Input struct {
 }
 
 const (
-	DRAG_THRESHOLD = 5.0
+	dragThreshold = 5.0
 )
 
 func NewInput() *Input {
@@ -98,7 +98,7 @@ func (i *Input) Update() {
 			i.mouseCurPosX = x
 			i.mouseCurPosY = y
 
-			if math.Abs(float64(x-i.mouseInitPosX)) > DRAG_THRESHOLD || math.Abs(float64(y-i.mouseInitPosY)) > DRAG_THRESHOLD {
+			if math.Abs(float64(x-i.mouseInitPosX)) > dragThreshold || math.Abs(float64(y-i.mouseInitPosY)) > dragThreshold {
 				i.mouseState = mouseStateLeftDrag
 			}
 		}
@@ -138,7 +138,7 @@ func (i *Input) Update() {
 			i.mouseCurPosX = x
 			i.mouseCurPosY = y
 
-			if math.Abs(float64(x-i.mouseInitPosX)) > DRAG_THRESHOLD || math.Abs(float64(y-i.mouseInitPosY)) > DRAG_THRESHOLD {
+			if math.Abs(float64(x-i.mouseInitPosX)) > dragThreshold || math.Abs(float64(y-i.mouseInitPosY)) > dragThreshold {
 				i.mouseState = mouseStateRightDrag
 			}
 		}
@@ -181,7 +181,7 @@ func (i *Input) Update() {
 				i.touchCurPosX = x
 				i.touchCurPosY = y
 
-				if math.Abs(float64(x-i.touchInitPosX)) > DRAG_THRESHOLD || math.Abs(float64(y-i.touchInitPosY)) > DRAG_THRESHOLD {
+				if math.Abs(float64(x-i.touchInitPosX)) > dragThreshold || math.Abs(float64(y-i.touchInitPosY)) > dragThreshold {
 					i.touchState = touchStateDrag
 				}
 			}

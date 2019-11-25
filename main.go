@@ -1,8 +1,9 @@
-package main
+package nonogram_go_app
 
 import (
-	"github.com/hajimehoshi/ebiten"
 	"log"
+
+	"github.com/hajimehoshi/ebiten"
 )
 
 var game *Game
@@ -25,7 +26,7 @@ func update(screen *ebiten.Image) error {
 func main() {
 	// Call ebiten.Run to start your game loop.
 	game, _ = StartGame()
-	if err := ebiten.Run(update, STAGE_W, STAGE_H, 2, "Nonogram Game"); err != nil {
+	if err := ebiten.Run(update, stageWidth, stageHeight, 2, "Nonogram Game"); err != nil {
 		log.Fatal(err)
 	}
 }

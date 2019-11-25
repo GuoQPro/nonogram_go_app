@@ -1,4 +1,4 @@
-package main
+package nonogram_go_app
 
 import (
 	//"fmt"
@@ -27,24 +27,24 @@ func NewOption(row int, col int, txt string, bound Bound) *Option {
 func (o *Option) DrawOption(screen *ebiten.Image, isSelected bool) error {
 	squareW := 10.0
 	squareH := 10.0
-	text_x := int(o.bound.x + squareW + 10.0)
-	text_y := int(o.bound.y + 10.0)
+	textX := int(o.bound.x + squareW + 10.0)
+	textY := int(o.bound.y + 10.0)
 
-	bg_color := color_blue
+	bgColor := colorBlue
 	if isSelected {
-		bg_color = color_red
+		bgColor = colorRed
 	}
-	ebitenutil.DrawRect(screen, o.bound.x-10, o.bound.y-2, squareW+100, squareH+4, bg_color)
+	ebitenutil.DrawRect(screen, o.bound.x-10, o.bound.y-2, squareW+100, squareH+4, bgColor)
 
 	// a check-box like controller.
-	line_width := 1.0
-	ebitenutil.DrawRect(screen, o.bound.x, o.bound.y, squareW, squareH, color_black)
+	lineWidth := 1.0
+	ebitenutil.DrawRect(screen, o.bound.x, o.bound.y, squareW, squareH, colorBlack)
 
 	if !isSelected {
-		ebitenutil.DrawRect(screen, o.bound.x+line_width, o.bound.y+line_width, squareW-line_width*2, squareH-line_width*2, bg_color)
+		ebitenutil.DrawRect(screen, o.bound.x+lineWidth, o.bound.y+lineWidth, squareW-lineWidth*2, squareH-lineWidth*2, bgColor)
 	}
 
-	text.Draw(screen, o.content, textFont, text_x, text_y, color_black)
+	text.Draw(screen, o.content, textFont, textX, textY, colorBlack)
 
 	return nil
 }
@@ -62,10 +62,12 @@ func (o *Option) TestTouch(x int, y int) bool {
 	return false
 }
 
+/*
+IsCurrentOption test if a given row/col is current option.
+*/
 func (o *Option) IsCurrentOption(row int, col int) bool {
 	if o.row == row && o.col == col {
 		return true
-	} else {
-		return false
 	}
+	return false
 }

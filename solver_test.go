@@ -1,4 +1,4 @@
-package main
+package nonogram_go_app
 
 import (
 	//"fmt"
@@ -13,16 +13,16 @@ var test = [][]int{
 	{1, 0, 1, 0, 0},
 }
 
-var row_ind = [][]int{
+var rowInd = [][]int{
 	{5}, {2, 1}, {2, 1}, {1}, {1, 1},
 }
 
-var col_ind = [][]int{
+var colInd = [][]int{
 	{1, 1, 1}, {4}, {2, 1}, {1}, {3},
 }
 
 func TestIsSoluable(t *testing.T) {
-	ok, answer := IsSoluable(row_ind, col_ind)
+	ok, answer := IsSoluable(rowInd, colInd)
 
 	if ok {
 		t.Log("Well done: ", answer)

@@ -1,4 +1,4 @@
-package main
+package nonogram_go_app
 
 import (
 	"github.com/hajimehoshi/ebiten"
@@ -7,49 +7,41 @@ import (
 	//"log"
 )
 
-//const (
-//	grid_w = 16
-//	grid_h = 16
-//
-//	inner_grid_w = grid_w * 0.8
-//	inner_grid_h = grid_h * 0.8
-//)
-
-type grid_state int
+type GridState int
 
 const (
-	GRID_NULL grid_state = iota
-	GRID_MARK_EXIST
-	GRID_MARK_NOTEXIST
+	gridStateNull GridState = iota
+	gridStateMarkExist
+	gridStateMarkNotExist
 )
 
 type Grid struct {
-	value grid_state
-	pos_x float64
-	pos_y float64
+	value GridState
+	posX  float64
+	posY  float64
 	hint  bool
 }
 
 func NewGrid(x float64, y float64) *Grid {
 
 	return &Grid{
-		value: GRID_NULL,
-		pos_x: x,
-		pos_y: y,
+		value: gridStateNull,
+		posX:  x,
+		posY:  y,
 		hint:  false,
 	}
 }
 
-func (g *Grid) SetValue(v grid_state) {
+func (g *Grid) SetValue(v GridState) {
 	g.value = v
 }
 
-func (g *Grid) GetValue() grid_state {
+func (g *Grid) GetValue() GridState {
 	return g.value
 }
 
 func (g *Grid) GetPos() (float64, float64) {
-	return g.pos_x, g.pos_y
+	return g.posX, g.posY
 }
 
 func (g *Grid) Hint() {
@@ -58,18 +50,18 @@ func (g *Grid) Hint() {
 
 func (g *Grid) Draw(screen *ebiten.Image) error {
 
-	ebitenutil.DrawRect(screen, g.pos_x, g.pos_y, grid_w, grid_h, color_white)
+	ebitenutil.DrawRect(screen, g.posX, g.posY, gridWidth, gridHeight, colorWhite)
 
-	innerOffsetW := (grid_w - inner_grid_w) * 0.5
-	innerOffsetH := (grid_h - inner_grid_h) * 0.5
+	innerOffsetW := (gridWidth - innerGridW) * 0.5
+	innerOffsetH := (gridHeight - innerGridH) * 0.5
 
-	if g.value == GRID_MARK_EXIST {
-		ebitenutil.DrawRect(screen, g.pos_x+innerOffsetW, g.pos_y+innerOffsetH, inner_grid_w, inner_grid_h, color_black)
-	} else if g.value == GRID_MARK_NOTEXIST {
-		ebitenutil.DrawRect(screen, g.pos_x+innerOffsetW, g.pos_y+innerOffsetH, inner_grid_w, inner_grid_h, color_red)
-	} else if g.value == GRID_NULL {
+	if g.value == gridStateMarkExist {
+		ebitenutil.DrawRect(screen, g.posX+innerOffsetW, g.posY+innerOffsetH, innerGridW, innerGridH, colorBlack)
+	} else if g.value == gridStateMarkNotExist {
+		ebitenutil.DrawRect(screen, g.posX+innerOffsetW, g.posY+innerOffsetH, innerGridW, innerGridH, colorRed)
+	} else if g.value == gridStateNull {
 		if g.hint {
-			ebitenutil.DrawRect(screen, g.pos_x+innerOffsetW, g.pos_y+innerOffsetH, inner_grid_w, inner_grid_h, color_black)
+			ebitenutil.DrawRect(screen, g.posX+innerOffsetW, g.posY+innerOffsetH, innerGridW, innerGridH, colorBlack)
 		}
 	}
 
@@ -77,53 +69,52 @@ func (g *Grid) Draw(screen *ebiten.Image) error {
 }
 
 func (g *Grid) OnLeftClick() error {
-	if g.value == GRID_MARK_EXIST {
-		g.value = GRID_NULL
-	} else if g.value == GRID_MARK_NOTEXIST {
-		g.value = GRID_NULL
-	} else if g.value == GRID_NULL {
-		g.value = GRID_MARK_EXIST
+	if g.value == gridStateMarkExist {
+		g.value = gridStateNull
+	} else if g.value == gridStateMarkNotExist {
+		g.value = gridStateNull
+	} else if g.value == gridStateNull {
+		g.value = gridStateMarkExist
 	}
 	return nil
 }
 
 func (g *Grid) OnRightClick() error {
-	if g.value == GRID_MARK_EXIST {
-		g.value = GRID_MARK_NOTEXIST
-	} else if g.value == GRID_MARK_NOTEXIST {
-		g.value = GRID_NULL
-	} else if g.value == GRID_NULL {
-		g.value = GRID_MARK_NOTEXIST
+	if g.value == gridStateMarkExist {
+		g.value = gridStateMarkNotExist
+	} else if g.value == gridStateMarkNotExist {
+		g.value = gridStateNull
+	} else if g.value == gridStateNull {
+		g.value = gridStateMarkNotExist
 	}
 	return nil
 }
 
 func (g *Grid) OnLeftDragOn() error {
-	if g.value == GRID_MARK_EXIST {
+	if g.value == gridStateMarkExist {
 
-	} else if g.value == GRID_MARK_NOTEXIST {
-		g.value = GRID_MARK_EXIST
-	} else if g.value == GRID_NULL {
-		g.value = GRID_MARK_EXIST
+	} else if g.value == gridStateMarkNotExist {
+		g.value = gridStateMarkExist
+	} else if g.value == gridStateNull {
+		g.value = gridStateMarkExist
 	}
 	return nil
 }
 
 func (g *Grid) OnRightDragOn() error {
-	if g.value == GRID_MARK_EXIST {
-		g.value = GRID_MARK_NOTEXIST
-	} else if g.value == GRID_MARK_NOTEXIST {
+	if g.value == gridStateMarkExist {
+		g.value = gridStateMarkNotExist
+	} else if g.value == gridStateMarkNotExist {
 
-	} else if g.value == GRID_NULL {
-		g.value = GRID_MARK_NOTEXIST
+	} else if g.value == gridStateNull {
+		g.value = gridStateMarkNotExist
 	}
 	return nil
 }
 
 func (g *Grid) IsSameGrid(rh *Grid) bool {
-	if g.pos_x == rh.pos_x && g.pos_y == rh.pos_y {
+	if g.posX == rh.posX && g.posY == rh.posY {
 		return true
-	} else {
-		return false
 	}
+	return false
 }
