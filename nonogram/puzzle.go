@@ -1,4 +1,4 @@
-package nonogrampuzzle
+package nonogram
 
 import (
 	"fmt"

@@ -1,4 +1,4 @@
-package nonogram_go_app
+package nonogram
 
 //"fmt"
 
