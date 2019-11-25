@@ -1,4 +1,4 @@
-package nonogram
+package puzzle
 
 import (
 	"fmt"
@@ -7,9 +7,9 @@ import (
 )
 
 const (
-	puzzleValueExist    = 1
-	puzzleValueNull     = 0
-	puzzleValueNotExist = 2
+	PuzzleValueNull     = 0
+	PuzzleValueExist    = 1
+	PuzzleValueNotExist = 2
 )
 
 type Row []int
@@ -20,7 +20,7 @@ type Puzzle []Row
 func (r *Row) String() string {
 	result := "|"
 	for i := range *r {
-		if (*r)[i] == puzzleValueExist {
+		if (*r)[i] == PuzzleValueExist {
 			result += " x"
 		} else {
 			result += "  "
@@ -85,7 +85,7 @@ func CalcIndicator(puzzle Puzzle) ([][]int, [][]int) {
 		curInd := 0
 		for col = 0; col < colNum; col++ {
 			value := puzzle[row][col]
-			if value == puzzleValueExist {
+			if value == PuzzleValueExist {
 				curInd++
 			} else {
 				if curInd != 0 {
@@ -113,7 +113,7 @@ func CalcIndicator(puzzle Puzzle) ([][]int, [][]int) {
 
 		for row = 0; row < rowNum; row++ {
 			value := puzzle[row][col]
-			if value == puzzleValueExist {
+			if value == PuzzleValueExist {
 				curInd++
 			} else {
 				if curInd != 0 {

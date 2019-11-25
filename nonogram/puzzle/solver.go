@@ -1,4 +1,4 @@
-package nonogram
+package puzzle
 
 //"fmt"
 
@@ -41,7 +41,7 @@ func IsSoluable(rowInd [][]int, colInd [][]int) (bool, Puzzle) {
 
 	for r := 0; r < rowNum; r++ {
 		for c := 0; c < colNum; c++ {
-			if t[r][c] == puzzleValueNull {
+			if t[r][c] == PuzzleValueNull {
 				return false, nil
 			}
 		}
@@ -65,7 +65,7 @@ func GetHint(rowInd [][]int, colInd [][]int, puzzle Puzzle) (int, int, int) {
 		curRow := GetRow(&t, r)
 		progressed, newValueIndex := Analyze(curRow, rowInd[r])
 		if progressed && len(newValueIndex) > 0 {
-			return r, newValueIndex[0], puzzleValueExist
+			return r, newValueIndex[0], PuzzleValueExist
 		}
 	}
 
@@ -73,7 +73,7 @@ func GetHint(rowInd [][]int, colInd [][]int, puzzle Puzzle) (int, int, int) {
 		curCol := GetCol(&t, c)
 		progressed, newValueIndex := Analyze(curCol, colInd[c])
 		if progressed && len(newValueIndex) > 0 {
-			return newValueIndex[0], c, puzzleValueExist
+			return newValueIndex[0], c, PuzzleValueExist
 		}
 	}
 
@@ -109,7 +109,7 @@ func InitTable(row int, col int) Puzzle {
 	for r := 0; r < row; r++ {
 		t[r] = make([]int, col)
 		for c := 0; c < col; c++ {
-			t[r][c] = puzzleValueNull
+			t[r][c] = PuzzleValueNull
 		}
 	}
 	return t
@@ -143,9 +143,9 @@ func CreateCandidate(v int, src *Candidate) Candidate {
 }
 
 func UpdateInd(ind []int, v int) []int {
-	if v == puzzleValueExist {
+	if v == PuzzleValueExist {
 		ind[len(ind)-1]++
-	} else if v == puzzleValueNotExist {
+	} else if v == PuzzleValueNotExist {
 		if ind[len(ind)-1] != 0 {
 			ind = append(ind, 0)
 		}
@@ -204,14 +204,14 @@ func Analyze(data []*int, ind []int) (bool, []int) {
 		newCadidates := []Candidate{}
 		isLastData := (dataIndex == dataLen-1)
 
-		if curValue == puzzleValueNull {
+		if curValue == PuzzleValueNull {
 			if candidatesLen == 0 {
-				newCadidates = append(newCadidates, CreateCandidate(puzzleValueExist, nil))
-				newCadidates = append(newCadidates, CreateCandidate(puzzleValueNotExist, nil))
+				newCadidates = append(newCadidates, CreateCandidate(PuzzleValueExist, nil))
+				newCadidates = append(newCadidates, CreateCandidate(PuzzleValueNotExist, nil))
 			} else {
 				for cIndex := 0; cIndex < candidatesLen; cIndex++ {
 
-					newC1 := CreateCandidate(puzzleValueExist, &(*preList)[cIndex])
+					newC1 := CreateCandidate(PuzzleValueExist, &(*preList)[cIndex])
 
 					// Early stop goes into effect here. Any candidate solution which does not comply with the given indicator
 					// will be filtered ASAP.
@@ -219,7 +219,7 @@ func Analyze(data []*int, ind []int) (bool, []int) {
 						newCadidates = append(newCadidates, newC1)
 					}
 
-					newC2 := CreateCandidate(puzzleValueNotExist, &(*preList)[cIndex])
+					newC2 := CreateCandidate(PuzzleValueNotExist, &(*preList)[cIndex])
 					if ValidateCandidate(&newC2, ind, isLastData) {
 						newCadidates = append(newCadidates, newC2)
 					}
@@ -264,12 +264,12 @@ func Analyze(data []*int, ind []int) (bool, []int) {
 	hasChanged := false
 	newExistValueIndex := []int{}
 	for i := 0; i < dataLen; i++ {
-		if finalResult[i] != puzzleValueNull {
+		if finalResult[i] != PuzzleValueNull {
 			if finalResult[i] != *(data)[i] {
 				hasChanged = true
 				*(data)[i] = finalResult[i]
 
-				if finalResult[i] == puzzleValueExist {
+				if finalResult[i] == PuzzleValueExist {
 					newExistValueIndex = append(newExistValueIndex, i)
 				}
 			}

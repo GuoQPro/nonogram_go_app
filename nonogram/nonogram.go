@@ -11,6 +11,7 @@ import (
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 	"github.com/hajimehoshi/ebiten/examples/resources/fonts"
 	"github.com/hajimehoshi/ebiten/text"
+	"github.com/mrsep18th/nonogram_go_app/nonogram/puzzle"
 	"golang.org/x/image/font"
 )
 
@@ -21,7 +22,7 @@ var (
 
 type Game struct {
 	board     *Board
-	puzzle    Puzzle //[][]int
+	puzzle    puzzle.Puzzle
 	input     *Input
 	row       int
 	col       int
@@ -148,7 +149,7 @@ func (g *Game) SwitchOpMode() {
 
 func (g *Game) ShowHint() {
 	// todo: if the current solution is already wrong.
-	t := make(Puzzle, g.row)
+	t := make(puzzle.Puzzle, g.row)
 
 	for r := 0; r < g.row; r++ {
 		t[r] = make([]int, g.col)
@@ -156,7 +157,7 @@ func (g *Game) ShowHint() {
 			t[r][c] = int(g.board.grids[r][c].value)
 		}
 	}
-	hintRow, hintCol, _ := GetHint(g.board.rowInd, g.board.colInd, t)
+	hintRow, hintCol, _ := puzzle.GetHint(g.board.rowInd, g.board.colInd, t)
 
 	g.board.grids[hintRow][hintCol].Hint()
 }
@@ -206,7 +207,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 }
 
 func (g *Game) InitGame(row int, col int) error {
-	g.puzzle = GetPuzzle(row, col)
+	g.puzzle = puzzle.GetPuzzle(row, col)
 	g.GenerateBoard(g.puzzle)
 	g.state = gameStatePlaying
 	g.startTime = time.Now()
@@ -225,7 +226,7 @@ func (g *Game) GetSolvingTime() string {
 	return lapse.Truncate(time.Millisecond).String()
 }
 
-func (g *Game) GenerateBoard(p Puzzle) {
+func (g *Game) GenerateBoard(p puzzle.Puzzle) {
 	bound := Bound{}
 	boardMarginWidth := float64(stageWidth) * 0.1
 	bound.w = float64(stageWidth)*2/3 - boardMarginWidth

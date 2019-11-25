@@ -8,6 +8,7 @@ import (
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 	"github.com/hajimehoshi/ebiten/text"
+	"github.com/mrsep18th/nonogram_go_app/nonogram/puzzle"
 	"golang.org/x/image/font"
 
 	//"log"
@@ -36,13 +37,13 @@ var (
 
 const minGridSize = 20
 
-func NewBoard(puzzle Puzzle, bound Bound) *Board {
+func NewBoard(puzzle puzzle.Puzzle, bound Bound) *Board {
 	board := &Board{}
 	board.InitBoard(puzzle, bound)
 	return board
 }
 
-func (b *Board) InitBoard(puzzle Puzzle, bound Bound) {
+func (b *Board) InitBoard(puzzle puzzle.Puzzle, bound Bound) {
 	b.bound = bound
 	b.CalcIndicator(puzzle)
 
@@ -140,9 +141,9 @@ func (b *Board) DrawIndicators(screen *ebiten.Image) {
 	}
 }
 
-func (b *Board) CalcIndicator(puzzle Puzzle) {
-	rowNum := len(puzzle)
-	colNum := len(puzzle[0])
+func (b *Board) CalcIndicator(p puzzle.Puzzle) {
+	rowNum := len(p)
+	colNum := len(p[0])
 
 	row, col := 0, 0
 
@@ -151,8 +152,8 @@ func (b *Board) CalcIndicator(puzzle Puzzle) {
 		curRowInd := []int{}
 		curInd := 0
 		for col = 0; col < colNum; col++ {
-			value := puzzle[row][col]
-			if value == puzzleValueExist {
+			value := p[row][col]
+			if value == puzzle.PuzzleValueExist {
 				curInd++
 			} else {
 				if curInd != 0 {
@@ -179,8 +180,8 @@ func (b *Board) CalcIndicator(puzzle Puzzle) {
 		curInd := 0
 
 		for row = 0; row < rowNum; row++ {
-			value := puzzle[row][col]
-			if value == puzzleValueExist {
+			value := p[row][col]
+			if value == puzzle.PuzzleValueExist {
 				curInd++
 			} else {
 				if curInd != 0 {

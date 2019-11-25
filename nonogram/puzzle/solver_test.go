@@ -1,4 +1,4 @@
-package nonogram
+package puzzle
 
 import (
 	//"fmt"
