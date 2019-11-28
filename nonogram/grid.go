@@ -7,6 +7,7 @@ import (
 	//"log"
 )
 
+// GridState is determined by grid value
 type GridState int
 
 const (
@@ -15,6 +16,7 @@ const (
 	gridStateMarkNotExist
 )
 
+// Grid is the data structure of grid
 type Grid struct {
 	value GridState
 	posX  float64
@@ -22,8 +24,8 @@ type Grid struct {
 	hint  bool
 }
 
+// NewGrid creates a new grid instance.
 func NewGrid(x float64, y float64) *Grid {
-
 	return &Grid{
 		value: gridStateNull,
 		posX:  x,
@@ -32,22 +34,22 @@ func NewGrid(x float64, y float64) *Grid {
 	}
 }
 
+// SetValue is the value setter.
 func (g *Grid) SetValue(v GridState) {
 	g.value = v
 }
 
+// GetValue is the value getter.
 func (g *Grid) GetValue() GridState {
 	return g.value
 }
 
-func (g *Grid) GetPos() (float64, float64) {
-	return g.posX, g.posY
-}
-
+// Hint make the grid display as hinting.
 func (g *Grid) Hint() {
 	g.hint = true
 }
 
+// Draw defines the method to draw a grid.
 func (g *Grid) Draw(screen *ebiten.Image) error {
 
 	ebitenutil.DrawRect(screen, g.posX, g.posY, gridWidth, gridHeight, colorWhite)
@@ -68,6 +70,7 @@ func (g *Grid) Draw(screen *ebiten.Image) error {
 	return nil
 }
 
+// OnLeftClick is the handler of left button click event.
 func (g *Grid) OnLeftClick() error {
 	if g.value == gridStateMarkExist {
 		g.value = gridStateNull
@@ -79,6 +82,7 @@ func (g *Grid) OnLeftClick() error {
 	return nil
 }
 
+// OnRightClick is the handler of right button click event.
 func (g *Grid) OnRightClick() error {
 	if g.value == gridStateMarkExist {
 		g.value = gridStateMarkNotExist
@@ -90,6 +94,7 @@ func (g *Grid) OnRightClick() error {
 	return nil
 }
 
+// OnLeftDragOn is the handler of left button drag event.
 func (g *Grid) OnLeftDragOn() error {
 	if g.value == gridStateMarkExist {
 
@@ -101,6 +106,7 @@ func (g *Grid) OnLeftDragOn() error {
 	return nil
 }
 
+// OnRightDragOn is the handler of right button drag event.
 func (g *Grid) OnRightDragOn() error {
 	if g.value == gridStateMarkExist {
 		g.value = gridStateMarkNotExist
@@ -112,6 +118,7 @@ func (g *Grid) OnRightDragOn() error {
 	return nil
 }
 
+// IsSameGrid determines if the givin grid is the same grid.
 func (g *Grid) IsSameGrid(rh *Grid) bool {
 	if g.posX == rh.posX && g.posY == rh.posY {
 		return true

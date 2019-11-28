@@ -27,7 +27,7 @@ func update(screen *ebiten.Image) error {
 func main() {
 	// Call ebiten.Run to start your game loop.
 	game, _ = nonogram.StartGame()
-	if err := ebiten.Run(update, 400, 600, 2, "Nonogram Game"); err != nil {
+	if err := ebiten.Run(update, nonogram.StageWidth, nonogram.StageHeight, 2, "Nonogram Game"); err != nil {
 		log.Fatal(err)
 	}
 }

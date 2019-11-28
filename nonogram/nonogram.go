@@ -15,11 +15,13 @@ import (
 	"golang.org/x/image/font"
 )
 
+// define size of game canvas
 var (
-	stageWidth  = 400
-	stageHeight = 600
+	StageWidth  = 400
+	StageHeight = 600
 )
 
+// Game is the data structure of app.
 type Game struct {
 	board     *Board
 	puzzle    puzzle.Puzzle
@@ -29,11 +31,11 @@ type Game struct {
 	startTime time.Time
 	endTime   time.Time
 	state     gameState
-	opMode    OpMode
+	opMode    opMode
 	options   []Option
 }
 
-// outline
+// Bound is the outline of game board
 type Bound struct {
 	x float64
 	y float64
@@ -41,14 +43,15 @@ type Bound struct {
 	h float64
 }
 
-type OpMode int
-type gameState int
+type opMode int
 
 const (
-	opModeLeftClick OpMode = iota
+	opModeLeftClick opMode = iota
 	opModeRightClick
 	opModeReserved
 )
+
+type gameState int
 
 var (
 	colorWhite = color.RGBA{252, 245, 239, 255}
@@ -86,20 +89,21 @@ func (e *nonogramErr) Error() string {
 
 var textFont font.Face
 
+// StartGame means literally.
 func StartGame() (*Game, error) {
 	game := &Game{}
 	game.opMode = opModeLeftClick
 	game.input = NewInput()
-	InitFonts()
-	game.SetOptions()
+	initFonts()
+	game.setOptions()
 
 	defaultRow := 5
 	defaultCol := 5
-	err := game.InitGame(defaultRow, defaultCol)
+	err := game.initGame(defaultRow, defaultCol)
 	return game, err
 }
 
-func (g *Game) SetOptions() {
+func (g *Game) setOptions() {
 	// Draw Options
 	availableSize := [][]int{
 		{5, 5}, {9, 9}, {12, 12}, {15, 15},
@@ -107,8 +111,8 @@ func (g *Game) SetOptions() {
 
 	g.options = make([]Option, 0)
 
-	orgX := (float64(stageWidth) / 3)
-	orgY := float64(stageHeight) * 1 / 4
+	orgX := (float64(StageWidth) / 3)
+	orgY := float64(StageHeight) * 1 / 4
 	height := 20.0
 
 	optionNumInRow := 2
@@ -124,7 +128,7 @@ func (g *Game) SetOptions() {
 		o := NewOption(row, col, txt, Bound{
 			x: x,
 			y: y,
-			w: float64(stageWidth),
+			w: float64(StageWidth),
 			h: height,
 		})
 
@@ -137,17 +141,17 @@ func (g *Game) SetOptions() {
 			x = orgX
 			counter = 0
 		} else {
-			x += (float64(stageWidth) / 3)
+			x += (float64(StageWidth) / 3)
 		}
 	}
 }
 
-func (g *Game) SwitchOpMode() {
+func (g *Game) switchOpMode() {
 	g.opMode++
 	g.opMode %= opModeReserved
 }
 
-func (g *Game) ShowHint() {
+func (g *Game) showHint() {
 	// todo: if the current solution is already wrong.
 	t := make(puzzle.Puzzle, g.row)
 
@@ -162,7 +166,7 @@ func (g *Game) ShowHint() {
 	g.board.grids[hintRow][hintCol].Hint()
 }
 
-func InitFonts() {
+func initFonts() {
 	tt, _ := truetype.Parse(fonts.ArcadeN_ttf)
 	textFont = truetype.NewFace(tt, &truetype.Options{
 		Size:    6,
@@ -171,12 +175,12 @@ func InitFonts() {
 	})
 }
 
-func (g *Game) RestartGame(row int, col int) error {
-	err := g.InitGame(row, col)
+func (g *Game) restartGame(row int, col int) error {
+	err := g.initGame(row, col)
 	return err
 }
 
-func (g *Game) Draw(screen *ebiten.Image) {
+func (g *Game) draw(screen *ebiten.Image) {
 	if err := g.board.DrawBoard(screen); err != nil {
 		log.Println(err)
 	}
@@ -196,9 +200,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	var timeLapse string
 	if g.state == gameStateSettle {
-		timeLapse = fmt.Sprintf("[%s] %s", g.state, g.GetSolvingTime()) // "Congrats: " + g.GetSolvingTime()
+		timeLapse = fmt.Sprintf("[%s] %s", g.state, g.getSolvingTime())
 	} else {
-		timeLapse = fmt.Sprintf("[%s] %s", g.state, g.GetLapse()) //g.GetLapse()
+		timeLapse = fmt.Sprintf("[%s] %s", g.state, g.getLapse())
 	}
 
 	timerPosX := int(opIndicatorX + gridWidth*2)
@@ -206,9 +210,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	text.Draw(screen, timeLapse, textFont, timerPosX, timerPosY, colorBlack)
 }
 
-func (g *Game) InitGame(row int, col int) error {
+func (g *Game) initGame(row int, col int) error {
 	g.puzzle = puzzle.GetPuzzle(row, col)
-	g.GenerateBoard(g.puzzle)
+	g.generateBoard(g.puzzle)
 	g.state = gameStatePlaying
 	g.startTime = time.Now()
 	g.row = row
@@ -216,34 +220,34 @@ func (g *Game) InitGame(row int, col int) error {
 	return nil
 }
 
-func (g *Game) GetLapse() string {
+func (g *Game) getLapse() string {
 	lapse := time.Since(g.startTime)
 	return lapse.Truncate(time.Millisecond).String()
 }
 
-func (g *Game) GetSolvingTime() string {
+func (g *Game) getSolvingTime() string {
 	lapse := g.endTime.Sub(g.startTime)
 	return lapse.Truncate(time.Millisecond).String()
 }
 
-func (g *Game) GenerateBoard(p puzzle.Puzzle) {
+func (g *Game) generateBoard(p puzzle.Puzzle) {
 	bound := Bound{}
-	boardMarginWidth := float64(stageWidth) * 0.1
-	bound.w = float64(stageWidth)*2/3 - boardMarginWidth
-	bound.h = float64(stageHeight)*2/3 - boardMarginWidth
-	bound.x = float64(stageWidth) - (bound.w + boardMarginWidth)
-	bound.y = float64(stageHeight) - (bound.h + boardMarginWidth)
+	boardMarginWidth := float64(StageWidth) * 0.1
+	bound.w = float64(StageWidth)*2/3 - boardMarginWidth
+	bound.h = float64(StageHeight)*2/3 - boardMarginWidth
+	bound.x = float64(StageWidth) - (bound.w + boardMarginWidth)
+	bound.y = float64(StageHeight) - (bound.h + boardMarginWidth)
 	g.board = NewBoard(p, bound)
 }
 
-func (g *Game) UpdateStateMachine() error {
+func (g *Game) updateStateMachine() error {
 	switch g.state {
 	case gameStatePlaying:
 		switch g.input.mouseState {
 		case mouseStateLeftPress:
 			for i := range g.options {
 				if g.options[i].TestTouch(g.input.mouseInitPosX, g.input.mouseInitPosY) {
-					g.RestartGame(g.options[i].row, g.options[i].col)
+					g.restartGame(g.options[i].row, g.options[i].col)
 				}
 			}
 			g.board.OnLeftClick(g.input.mouseInitPosX, g.input.mouseInitPosY)
@@ -258,9 +262,9 @@ func (g *Game) UpdateStateMachine() error {
 		switch g.input.touchState {
 		case touchStateMultiTouch:
 			if g.input.touchPointNum == 2 {
-				g.SwitchOpMode()
+				g.switchOpMode()
 			} else if g.input.touchPointNum == 3 {
-				g.ShowHint()
+				g.showHint()
 			}
 
 		case touchStatePress:
@@ -277,7 +281,7 @@ func (g *Game) UpdateStateMachine() error {
 			}
 		}
 
-		if g.IsCorrectAnswer() {
+		if g.isCorrectAnswer() {
 			g.state = gameStateSucc
 		}
 
@@ -288,21 +292,24 @@ func (g *Game) UpdateStateMachine() error {
 	case gameStateSettle:
 		if g.input.mouseState == mouseStateLeftPress ||
 			g.input.touchState == touchStatePress {
-			g.RestartGame(g.row, g.col)
+			g.restartGame(g.row, g.col)
 		}
 	}
 	return nil
 }
 
+/*
+Update is the mainloop of the game.
+*/
 func (g *Game) Update(screen *ebiten.Image) error {
 	g.input.Update()
-	g.UpdateStateMachine()
-	g.Draw(screen)
+	g.updateStateMachine()
+	g.draw(screen)
 
 	return nil
 }
 
-func (g *Game) IsCorrectAnswer() bool {
+func (g *Game) isCorrectAnswer() bool {
 	for i := range g.puzzle {
 		for j := range g.puzzle[i] {
 			qValue := g.puzzle[i][j]

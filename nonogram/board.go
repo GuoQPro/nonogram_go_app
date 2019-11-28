@@ -5,16 +5,16 @@ import (
 
 	"image/color"
 
+	"math"
+
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 	"github.com/hajimehoshi/ebiten/text"
 	"github.com/mrsep18th/nonogram_go_app/nonogram/puzzle"
 	"golang.org/x/image/font"
-
-	//"log"
-	"math"
 )
 
+// Board is the data structure
 type Board struct {
 	grids  [][]*Grid
 	rowInd [][]int
@@ -37,20 +37,21 @@ var (
 
 const minGridSize = 20
 
+// NewBoard creates a new board instance.
 func NewBoard(puzzle puzzle.Puzzle, bound Bound) *Board {
 	board := &Board{}
-	board.InitBoard(puzzle, bound)
+	board.initBoard(puzzle, bound)
 	return board
 }
 
-func (b *Board) InitBoard(puzzle puzzle.Puzzle, bound Bound) {
+func (b *Board) initBoard(puzzle puzzle.Puzzle, bound Bound) {
 	b.bound = bound
-	b.CalcIndicator(puzzle)
+	b.calcIndicator(puzzle)
 
 	row := len(puzzle)
 	col := len(puzzle[0])
 
-	b.CentralizeBoard(row, col)
+	b.centralizeBoard(row, col)
 
 	b.grids = make([][]*Grid, row)
 
@@ -66,7 +67,7 @@ func (b *Board) InitBoard(puzzle puzzle.Puzzle, bound Bound) {
 	}
 }
 
-func (b *Board) CentralizeBoard(row int, col int) {
+func (b *Board) centralizeBoard(row int, col int) {
 	gridTotalW := math.Ceil(b.bound.w / float64(row))
 	gridTotalH := math.Ceil(b.bound.h / float64(col))
 
@@ -93,7 +94,7 @@ func (b *Board) CentralizeBoard(row int, col int) {
 	b.startY = ((b.bound.h - b.height) / 2) + b.bound.y
 }
 
-func (b *Board) DrawIndicators(screen *ebiten.Image) {
+func (b *Board) drawIndicators(screen *ebiten.Image) {
 	textColor := colorBlack
 
 	startY := b.startY
@@ -141,7 +142,7 @@ func (b *Board) DrawIndicators(screen *ebiten.Image) {
 	}
 }
 
-func (b *Board) CalcIndicator(p puzzle.Puzzle) {
+func (b *Board) calcIndicator(p puzzle.Puzzle) {
 	rowNum := len(p)
 	colNum := len(p[0])
 
@@ -203,9 +204,10 @@ func (b *Board) CalcIndicator(p puzzle.Puzzle) {
 	}
 }
 
+// DrawBoard defines the method to draw a board.
 func (b *Board) DrawBoard(screen *ebiten.Image) error {
-	ebitenutil.DrawRect(screen, 0, 0, float64(stageWidth), float64(stageHeight), color.RGBA{255, 255, 255, 255})
-	b.DrawIndicators(screen)
+	ebitenutil.DrawRect(screen, 0, 0, float64(StageWidth), float64(StageHeight), color.RGBA{255, 255, 255, 255})
+	b.drawIndicators(screen)
 	for row := range b.grids {
 		for col := range b.grids[row] {
 			if err := b.grids[row][col].Draw(screen); err != nil {
@@ -216,7 +218,7 @@ func (b *Board) DrawBoard(screen *ebiten.Image) error {
 	return nil
 }
 
-func (b *Board) GetGridByPos(x int, y int) (*Grid, error) {
+func (b *Board) getGridByPos(x int, y int) (*Grid, error) {
 	rowNum := len(b.grids)
 	colNum := len(b.grids[0])
 
@@ -230,8 +232,9 @@ func (b *Board) GetGridByPos(x int, y int) (*Grid, error) {
 	return nil, &nonogramErr{desc: "click outside board"}
 }
 
+// OnLeftClick is the handler of left button click event within a board.
 func (b *Board) OnLeftClick(x int, y int) error {
-	grid, err := b.GetGridByPos(x, y)
+	grid, err := b.getGridByPos(x, y)
 
 	if err == nil {
 		grid.OnLeftClick()
@@ -240,8 +243,9 @@ func (b *Board) OnLeftClick(x int, y int) error {
 	return err
 }
 
+// OnRightClick is the handler of right button click event within a board.
 func (b *Board) OnRightClick(x int, y int) error {
-	grid, err := b.GetGridByPos(x, y)
+	grid, err := b.getGridByPos(x, y)
 
 	if err == nil {
 		grid.OnRightClick()
@@ -250,14 +254,15 @@ func (b *Board) OnRightClick(x int, y int) error {
 	return err
 }
 
+// OnLeftDrag is the handler of left button drag event within a board.
 func (b *Board) OnLeftDrag(curX int, curY int, startX int, startY int) error {
-	curGrid, curErr := b.GetGridByPos(curX, curY)
+	curGrid, curErr := b.getGridByPos(curX, curY)
 
 	if curErr != nil {
 		return curErr
 	}
 
-	startGrid, startErr := b.GetGridByPos(startX, startY)
+	startGrid, startErr := b.getGridByPos(startX, startY)
 
 	if startErr != nil {
 		return startErr
@@ -272,14 +277,15 @@ func (b *Board) OnLeftDrag(curX int, curY int, startX int, startY int) error {
 	return nil
 }
 
+// OnRightDrag is the handler of right button drag event within a board.
 func (b *Board) OnRightDrag(curX int, curY int, startX int, startY int) error {
-	curGrid, curErr := b.GetGridByPos(curX, curY)
+	curGrid, curErr := b.getGridByPos(curX, curY)
 
 	if curErr != nil {
 		return curErr
 	}
 
-	startGrid, startErr := b.GetGridByPos(startX, startY)
+	startGrid, startErr := b.getGridByPos(startX, startY)
 
 	if startErr != nil {
 		return startErr

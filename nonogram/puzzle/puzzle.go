@@ -6,12 +6,16 @@ import (
 	"time"
 )
 
+//
+
+// value of each grid.
 const (
 	PuzzleValueNull     = 0
 	PuzzleValueExist    = 1
 	PuzzleValueNotExist = 2
 )
 
+// Row : data structure of a row.
 type Row []int
 
 //Puzzle data structure of a Puzzle
@@ -73,6 +77,7 @@ func GeneratePuzzle(row int, col int) Puzzle {
 	return p
 }
 
+// CalcIndicator generate row and col indicators fo givin puzzle
 func CalcIndicator(puzzle Puzzle) ([][]int, [][]int) {
 	rowNum := len(puzzle)
 	colNum := len(puzzle[0])

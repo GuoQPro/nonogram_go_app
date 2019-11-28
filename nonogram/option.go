@@ -1,13 +1,12 @@
 package nonogram
 
 import (
-	//"fmt"
-
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 	"github.com/hajimehoshi/ebiten/text"
 )
 
+// Option is used for users to select puzzle size.
 type Option struct {
 	bound   Bound
 	content string
@@ -15,6 +14,7 @@ type Option struct {
 	col     int
 }
 
+// NewOption is constructor of option.
 func NewOption(row int, col int, txt string, bound Bound) *Option {
 	o := &Option{}
 	o.bound = bound
@@ -24,6 +24,7 @@ func NewOption(row int, col int, txt string, bound Bound) *Option {
 	return o
 }
 
+// DrawOption is drawer of option instance.
 func (o *Option) DrawOption(screen *ebiten.Image, isSelected bool) error {
 	squareW := 10.0
 	squareH := 10.0
@@ -49,6 +50,7 @@ func (o *Option) DrawOption(screen *ebiten.Image, isSelected bool) error {
 	return nil
 }
 
+// TestTouch tests if a click event occurs inside the option area.
 func (o *Option) TestTouch(x int, y int) bool {
 	left := int(o.bound.x)
 	right := left + int(o.bound.w)

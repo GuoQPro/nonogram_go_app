@@ -55,6 +55,7 @@ const (
 	dragThreshold = 5.0
 )
 
+// NewInput creates a Input instance.
 func NewInput() *Input {
 	return &Input{}
 }
